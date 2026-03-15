@@ -9,3 +9,6 @@ Desenvolva 4 agentes de IA que interajam entre si para realizar uma revisão de 
 # agenteArchitecture & Design reviewer
 # agente Security & Auth reviewer
 # agente agente Sintetizador — plano de ação
+
+--
+Agent(Auditoria de segurança da API)
