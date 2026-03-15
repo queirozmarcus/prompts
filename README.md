@@ -5,8 +5,8 @@ Desenvolva 4 agentes de IA que interajam entre si para realizar uma revisão de 
 
 
 # Agentes: 
-Agent(agente Code Quality & UX reviewer)
-Agent(agenteArchitecture & Design reviewer)
-Agent(agente Security & Auth reviewer)
-Agent(agente agente Sintetizador — plano de ação)
+Agent(Code Quality & UX reviewer)
+Agent(Architecture & Design reviewer)
+Agent(Security & Auth reviewer)
+Agent(Sintetizador — plano de ação)
 Agent(Auditoria de segurança da API)
