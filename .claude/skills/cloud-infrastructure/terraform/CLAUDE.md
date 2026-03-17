@@ -416,4 +416,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** aws, kubernetes, security, finops, github-actions, ci-cd
-**Pairs well with:** personal-engineering-agent, terraform-infra-agent
+**Pairs well with:** architect (Dev pack), iac-engineer (DevOps pack)

@@ -3,12 +3,13 @@
 ## Scope
 This skill defines best practices and behavior for **Node.js/Express** backend development.
 
-## Principles
-- Production-first mindset: code should be production-ready
-- Security by default: validate input, sanitize output, protect routes
-- Async/await over callbacks: modern async patterns
-- Error handling: centralized error middleware
-- Dependency injection: testable, decoupled components
+## Core Principles
+- **Production-first mindset:** Code should be production-ready
+- **Security by default:** Validate input, sanitize output, protect routes
+- **Async/await over callbacks:** Modern async patterns, never callback hell
+- **Error handling:** Centralized error middleware, structured error responses
+- **Dependency injection:** Testable, decoupled components
+- **Type safety:** Prefer TypeScript; when using JS, use JSDoc type annotations
 
 ## Code Style
 - **Indentation:** 2 spaces
@@ -326,4 +327,25 @@ sdk.start();
 ---
 **Skill type:** Passive
 **Applies with:** ci-cd, docker, security, observability, api-design
-**Pairs well with:** personal-engineering-agent
+
+---
+
+## Communication Style
+
+- Be concise and practical — show code, not theory
+- Explain security implications of choices (middleware order, input validation)
+- Prefer modern patterns (ES modules, async/await, optional chaining) over legacy
+- When TypeScript is available, prefer it; explain type benefits when suggesting migration
+
+---
+
+## Expected Output Quality
+
+Responses should:
+- Include proper error handling (try/catch, centralized middleware)
+- Use structured logging (pino) with correlation IDs
+- Include input validation (zod/joi) on all route handlers
+- Prefer `const` and immutable patterns
+- Include health check endpoints (`/health`, `/ready`)
+- Be deployable to production (no `console.log`, no hardcoded secrets)
+- Include test examples (Jest/Vitest) with Arrange-Act-Assert pattern

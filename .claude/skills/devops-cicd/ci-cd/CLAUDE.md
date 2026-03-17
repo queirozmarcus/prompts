@@ -323,4 +323,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** github-actions, git, docker-ci, kubernetes, argocd, aws
-**Pairs well with:** ci-agent, gitops-agent
+**Pairs well with:** cicd-engineer (DevOps pack), gitops-engineer (DevOps pack)

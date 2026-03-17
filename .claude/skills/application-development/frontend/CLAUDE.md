@@ -4,7 +4,7 @@
 
 React and Next.js frontend development with TypeScript. Covers component patterns, state management, rendering strategies (CSR/SSR/SSG/ISR), bundle optimization, testing with Vitest and React Testing Library, accessibility basics, and production deployment patterns.
 
-## Related Agent: personal-engineering-agent
+## Related Agent: architect, code-reviewer (Dev pack)
 ## Related Playbook: dependency-update.md
 
 ## Core Principles
@@ -366,4 +366,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** api-design, nodejs, ci-cd, docker
-**Pairs well with:** personal-engineering-agent
+**Pairs well with:** architect (Dev pack)

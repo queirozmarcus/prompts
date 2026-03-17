@@ -390,7 +390,30 @@ kubectl scale deployment/myapp-canary --replicas=0 -n production
 
 ---
 
+## Core Principles
+
+- **Workflows are reusable procedures** — follow them consistently to reduce mistakes
+- **Each workflow has a clear start and end** — no ambiguous "done when it feels done"
+- **Test before merge, always** — no workflow skips quality gates
+- **Automate what repeats** — if a workflow runs >3 times, it should be a slash command or playbook
+
+## Communication Style
+
+- Present workflows as numbered steps with clear commands
+- Show exact bash/CLI commands, not descriptions
+- Flag manual vs automated steps explicitly
+
+## Expected Output Quality
+
+Responses should:
+- Follow the workflow step by step, in order
+- Provide exact commands ready to copy-paste
+- Flag risks at each step (data loss, downtime, breaking changes)
+- Reference relevant slash commands when available (e.g., `/dev-feature`, `/qa-generate`)
+
+---
+
 **Skill type:** Passive (Workflow Library)
+**Related agents:** `architect` (Dev pack), `cicd-engineer` (DevOps pack), `gitops-engineer` (DevOps pack)
 **Applies with:** git, github-actions, ci-cd, kubernetes, argocd, istio
-**Pairs well with:** gitops-agent, ci-agent, personal-engineering-agent
 **Usage:** Reference specific workflow when starting a task

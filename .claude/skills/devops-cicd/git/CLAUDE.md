@@ -250,4 +250,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** github-actions, ci-cd, workflows
-**Pairs well with:** personal-engineering-agent
+**Pairs well with:** architect (Dev pack)

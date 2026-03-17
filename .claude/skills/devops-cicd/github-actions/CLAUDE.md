@@ -4,7 +4,7 @@
 
 Design e operação de pipelines CI/CD com GitHub Actions. Cobre estrutura de workflows, triggers, jobs, caching, matrix builds, reusable workflows, composite actions, secrets, autenticação OIDC (AWS), armazenamento de artifacts, segurança e otimização de custo. Aplicável a qualquer task envolvendo `.github/workflows/`.
 
-## Related Agent: ci-agent
+## Related Agent: cicd-engineer (DevOps pack)
 ## Related Playbook: (use security-audit.md as CI security gate reference)
 
 ## Core Principles
@@ -341,4 +341,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** ci-cd, git, docker-ci, aws, terraform
-**Pairs well with:** ci-agent, personal-engineering-agent
+**Pairs well with:** cicd-engineer (DevOps pack), architect (Dev pack)

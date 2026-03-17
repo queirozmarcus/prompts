@@ -45,7 +45,7 @@ Use for GitOps workflows, Argo CD applications, sync strategies, and drift manag
 Use when working with RDS, Aurora, DynamoDB, or PostgreSQL. Covers engine selection, Multi-AZ vs Read Replicas, connection pooling, zero-downtime migrations, and backup/restore.
 
 **`mysql/`**
-Use when working with MySQL 8.x or MariaDB on RDS or self-managed. Covers utf8mb4, InnoDB, EXPLAIN output (type/key/Extra), composite index ordering, ALGORITHM=INSTANT/INPLACE DDL, pt-osc, gh-ost, GTID replication, ProxySQL, RDS Blue/Green Deployments, and Performance Schema queries. Agent: mysql-agent.
+Use when working with MySQL 8.x or MariaDB on RDS or self-managed. Covers utf8mb4, InnoDB, EXPLAIN output (type/key/Extra), composite index ordering, ALGORITHM=INSTANT/INPLACE DDL, pt-osc, gh-ost, GTID replication, ProxySQL, RDS Blue/Green Deployments, and Performance Schema queries. Agent: mysql-engineer (Data pack).
 
 ---
 
@@ -71,13 +71,16 @@ Use for Java/Spring Boot development, REST APIs, JPA, security, testing, and ent
 Use for Node.js/Express backend development, TypeScript, observability/APM with pino and prom-client, security, testing, and production best practices.
 
 **`python/`**
-Use for Python development: PEP 8, Black/Ruff formatting, type hints, Poetry/pip-tools dependency management, FastAPI, pytest, async patterns, and structlog. Agent: personal-engineering-agent.
+Use for Python development: PEP 8, Black/Ruff formatting, type hints, Poetry/pip-tools dependency management, FastAPI, pytest, async patterns, and structlog. Agent: architect, code-reviewer (Dev pack).
 
 **`frontend/`**
-Use for React and Next.js development: TypeScript strict mode, Server vs Client Components, TanStack Query, Vitest/RTL testing, bundle optimization, and SSR/SSG/ISR rendering strategies. Agent: personal-engineering-agent.
+Use for React and Next.js development: TypeScript strict mode, Server vs Client Components, TanStack Query, Vitest/RTL testing, bundle optimization, and SSR/SSG/ISR rendering strategies. Agent: architect, code-reviewer (Dev pack).
 
 **`api-design/`**
 Use when designing or reviewing HTTP APIs: REST resource naming, status codes, RFC 7807 error format, pagination, versioning, idempotency keys, and OpenAPI specs.
+
+**`testing/`**
+Use when writing, reviewing, or planning tests: test pyramid, Given-When-Then pattern, Testcontainers, contract testing, quality gates, naming conventions, mocking rules, and anti-patterns. Provides passive context for all QA pack agents. Agents: qa-lead, unit-test-engineer, integration-test-engineer, contract-test-engineer, performance-engineer, e2e-test-engineer, test-automation-engineer, security-test-engineer (QA pack).
 
 ---
 
@@ -87,13 +90,13 @@ Use when designing or reviewing HTTP APIs: REST resource naming, status codes, R
 Use for Git workflows, trunk-based development, Conventional Commits, history safety, branching, and collaboration.
 
 **`github-actions/`**
-Use for GitHub Actions CI/CD pipelines: SHA-pinned actions, OIDC for AWS, caching, matrix builds, security scanning with Trivy, reusable workflows (`workflow_call`), and composite actions. Agent: ci-agent.
+Use for GitHub Actions CI/CD pipelines: SHA-pinned actions, OIDC for AWS, caching, matrix builds, security scanning with Trivy, reusable workflows (`workflow_call`), and composite actions. Agent: cicd-engineer (DevOps pack).
 
 **`ci-cd/`**
 Use for higher-level pipeline architecture: build-once-promote pattern, quality gates, blue-green and canary deployments, rollback triggers, and artifact management.
 
 **`release-management/`**
-Use for release process: semantic versioning, Conventional Commits → CHANGELOG automation, GitHub Releases, release branches, hotfix workflow, and semantic-release / release-please tooling. Agent: ci-agent.
+Use for release process: semantic versioning, Conventional Commits → CHANGELOG automation, GitHub Releases, release branches, hotfix workflow, and semantic-release / release-please tooling. Agent: cicd-engineer (DevOps pack).
 
 **`workflows/`**
 Reusable procedure library: feature development, bug fix, code review, dependency updates, database migrations, performance investigation, security incident, feature flags, and canary deployments.
@@ -103,25 +106,25 @@ Reusable procedure library: feature development, bug fix, code review, dependenc
 ### 🔒 Operations & Monitoring (`operations-monitoring/`)
 
 **`security/`**
-Use when security considerations are primary: OWASP Top 10, IAM least privilege, secrets management hierarchy, container security, and CI/CD security gates. Agent: security-agent.
+Use when security considerations are primary: OWASP Top 10, IAM least privilege, secrets management hierarchy, container security, and CI/CD security gates. Agent: security-ops (DevOps pack).
 
 **`secrets-management/`**
-Use for all secret lifecycle concerns: AWS Secrets Manager, SSM Parameter Store, Vault basics, secret injection in ECS/K8s, automated rotation (dual-credential pattern), and pipeline secret scanning. Agent: security-agent. Playbook: secret-rotation.md.
+Use for all secret lifecycle concerns: AWS Secrets Manager, SSM Parameter Store, Vault basics, secret injection in ECS/K8s, automated rotation (dual-credential pattern), and pipeline secret scanning. Agent: security-ops (DevOps pack). Playbook: secret-rotation.md.
 
 **`observability/`**
-Use for logs, metrics, traces, alerting, and SLO/SLA discussions. Covers Prometheus, PromQL, Grafana, OpenTelemetry, SLOTH SLO templates, trace-log correlation, pino structured logging, and error budget burn rate alerts. Agent: observability-agent.
+Use for logs, metrics, traces, alerting, and SLO/SLA discussions. Covers Prometheus, PromQL, Grafana, OpenTelemetry, SLOTH SLO templates, trace-log correlation, pino structured logging, and error budget burn rate alerts. Agent: observability-engineer (DevOps pack).
 
 **`networking/`**
 Use for VPC design, routing, DNS, load balancing, and traffic analysis. Covers 3-tier VPC, SG vs NACL, NAT Gateway costs, VPC Endpoints, Route53, and K8s networking troubleshooting.
 
 **`incidents/`**
-Use during outages, troubleshooting, incident response, and postmortems. Covers SEV1-4 matrix, 15-minute golden window, signal gathering commands, and blameless RCA templates. Agent: incident-agent.
+Use during outages, troubleshooting, incident response, and postmortems. Covers SEV1-4 matrix, 15-minute golden window, signal gathering commands, and blameless RCA templates. Agent: sre-engineer (DevOps pack).
 
 **`finops/`**
-Use for cost analysis, optimization, budgets, and cloud financial governance. Covers EC2/RDS rightsizing, NAT Gateway optimization, Savings Plans, S3 storage classes, and waste audits. Agent: finops-agent.
+Use for cost analysis, optimization, budgets, and cloud financial governance. Covers EC2/RDS rightsizing, NAT Gateway optimization, Savings Plans, S3 storage classes, and waste audits. Agent: finops-engineer (DevOps pack).
 
 **`monitoring-as-code/`**
-Use when creating Prometheus alerting rules, recording rules, Alertmanager config, Grafana dashboards as code, SLO-based alerts, and promtool unit tests. Agent: observability-agent.
+Use when creating Prometheus alerting rules, recording rules, Alertmanager config, Grafana dashboards as code, SLO-based alerts, and promtool unit tests. Agent: observability-engineer (DevOps pack).
 
 ## Best Practices
 - Combine skills mentally when needed (e.g., `aws + terraform + finops`)

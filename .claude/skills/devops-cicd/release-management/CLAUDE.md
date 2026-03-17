@@ -4,7 +4,7 @@
 
 Structured release process covering semantic versioning, automated changelog generation from Conventional Commits, GitHub Releases, release branches, hotfix workflows, and release communication. Applies to any project that ships versioned artifacts to users or downstream consumers.
 
-## Related Agent: ci-agent
+## Related Agent: cicd-engineer (DevOps pack)
 ## Related Playbook: (none specific — use ci-cd patterns)
 
 ## Core Principles
@@ -394,4 +394,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** git, github-actions, ci-cd, workflows
-**Pairs well with:** ci-agent, personal-engineering-agent
+**Pairs well with:** cicd-engineer (DevOps pack), architect (Dev pack)

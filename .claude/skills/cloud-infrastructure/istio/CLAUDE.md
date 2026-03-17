@@ -324,4 +324,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** kubernetes, observability, security
-**Pairs well with:** k8s-platform-agent, gitops-agent, personal-engineering-agent
+**Pairs well with:** kubernetes-engineer (DevOps pack), gitops-engineer (DevOps pack), architect (Dev pack)

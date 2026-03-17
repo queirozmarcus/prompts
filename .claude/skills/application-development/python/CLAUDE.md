@@ -4,7 +4,7 @@
 
 Python development following PEP 8 and modern best practices. Covers formatting (Black/Ruff), type hints, dependency management (Poetry/pip-tools), testing (pytest), async patterns, FastAPI, and production-grade code quality. Applicable to any Python project or script.
 
-## Related Agent: personal-engineering-agent
+## Related Agent: architect, code-reviewer (Dev pack)
 ## Related Playbook: dependency-update.md
 
 ## Core Principles
@@ -413,4 +413,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** api-design, docker, security, observability, ci-cd
-**Pairs well with:** personal-engineering-agent
+**Pairs well with:** architect (Dev pack)

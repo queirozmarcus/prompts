@@ -4,7 +4,7 @@
 
 MySQL 8.x and MariaDB development and operations — query optimization, schema migrations, replication, RDS MySQL specifics, connection pooling (ProxySQL/RDS Proxy), and zero-downtime schema changes. Applies when working with MySQL or MariaDB on AWS RDS, self-managed instances, or local development environments.
 
-**Related Agent:** `mysql-agent.md`
+**Related Agent:** `mysql-engineer` (Data pack)
 **Related Playbook:** `database-migration.md`, `dr-restore.md`
 
 **When to use MySQL vs PostgreSQL:**
@@ -643,4 +643,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** aws, terraform, nodejs, java, python
-**Pairs well with:** mysql-agent, personal-engineering-agent
+**Pairs well with:** mysql-engineer (Data pack), architect (Dev pack)

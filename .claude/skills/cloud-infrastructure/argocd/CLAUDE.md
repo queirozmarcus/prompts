@@ -303,4 +303,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** kubernetes, git, helm, github-actions
-**Pairs well with:** gitops-agent, k8s-platform-agent, personal-engineering-agent
+**Pairs well with:** gitops-engineer (DevOps pack), kubernetes-engineer (DevOps pack), architect (Dev pack)

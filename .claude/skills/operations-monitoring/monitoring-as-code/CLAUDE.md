@@ -434,4 +434,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** observability, kubernetes, terraform, finops
-**Pairs well with:** incident-agent, k8s-platform-agent, personal-engineering-agent
+**Pairs well with:** sre-engineer (DevOps pack), kubernetes-engineer (DevOps pack), architect (Dev pack)

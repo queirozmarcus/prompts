@@ -9,85 +9,96 @@ Instruções globais do Claude Code para todos os repositórios. Overrides de pr
 ├── CLAUDE.md          # Este arquivo — instruções globais
 ├── settings.json      # Permissões, hooks, preferências do Claude Code
 ├── memory/            # Memória persistente entre sessões (MEMORY.md + tópicos)
-├── skills/            # Passive skills — ativados por contexto de domínio
+├── skills/            # 28 passive skills — ativados por contexto de domínio
 ├── checks/            # Micro-checklists reutilizáveis (Kubernetes, Terraform, etc.)
 ├── playbooks/         # Sequências de tarefas reutilizáveis
-├── agents/            # Subagentes customizados (Marcus + agents de pack)
+├── agents/            # 36 subagentes (Marcus + 35 de pack)
 │   └── marcus.md      # Orquestrador global — ponto de entrada principal
-├── commands/          # Slash commands instalados dos packs
-├── zIMA/              # Configs desativadas/arquivadas (prefixadas com z_)
-└── plugins/           # Plugins instalados (superpowers, qodo, playwright, etc.)
+├── commands/          # 27 slash commands instalados dos packs
+├── plugins/           # Plugins instalados (superpowers, qodo, playwright, etc.)
+└── zIMA/              # Configs desativadas/arquivadas (prefixadas com z_)
 ```
 
 ## Ecossistema de Agentes
 
 O ambiente de desenvolvimento é operado por **Agent-Marcus** como orquestrador global e **5 team packs** com agentes especializados.
 
-**Ponto de entrada:** `claude --agent marcus` — Marcus classifica qualquer pedido e delega para o especialista certo. Nunca implementa; apenas roteia.
+**Ponto de entrada:** `claude --agent marcus` — Marcus classifica qualquer pedido e delega para o especialista certo. Nunca implementa; apenas roteia. Faz varredura do projeto ao iniciar sessão.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Agent-Marcus (global)                     │
-│              Orquestrador · Claude Code Expert                │
-│              Carismático · Roteia tudo · PT-BR                │
+│    Orquestrador · Claude Code Expert · Plugins & Connectors  │
+│    Carismático · Conhece todos os 48 slash commands · PT-BR  │
 ├─────────────────────────────────────────────────────────────┤
 │ Dev Team    │ QA Team     │ DevOps Team │ Data   │ Migration │
 │ 6 agents   │ 8 agents    │ 11 agents   │ 3 ag.  │ 7 agents  │
 │ 6 commands │ 7 commands  │ 8 commands  │ 2 cmd  │ 4 commands│
 └─────────────────────────────────────────────────────────────┘
-  36 agents · 27 slash commands · 6+ plugins
+  36 agents · 27 pack commands · 21 native commands · 6 plugins
 ```
 
 ### Packs e Seus Domínios
 
 | Pack | Domínio | Commands Principais |
 |------|---------|--------------------|
-| **Dev** | Java 21+ / Spring Boot, hexagonal | `/dev-feature`, `/dev-bootstrap`, `/full-bootstrap` |
+| **Dev** | Java 8/21/25+ / Spring Boot, hexagonal | `/dev-feature`, `/dev-bootstrap`, `/full-bootstrap` |
 | **QA** | Testes: unit, integration, contract, E2E, perf, security | `/qa-audit`, `/qa-generate`, `/qa-contract` |
 | **DevOps** | K8s, Terraform, CI/CD, SRE, FinOps, GitOps, AWS | `/devops-provision`, `/devops-incident`, `/devops-finops` |
 | **Data** | PostgreSQL, MySQL, schema, migrations, query tuning | `/data-optimize`, `/data-migrate` |
 | **Migration** | Monólito → microsserviços (Strangler Fig) | `/migration-discovery`, `/migration-extract` |
 
-### Agents vs Skills vs Plugins
+### Sinergia: Agents ↔ Skills ↔ Plugins
 
 | Conceito | Onde vive | Como ativa | Propósito |
 |----------|-----------|------------|-----------|
-| **Agents** | `~/.claude/agents/` | `claude --agent {name}` ou delegação via Marcus/commands | Especialista com identidade, tools e context window próprio |
-| **Skills (passivas)** | `~/.claude/skills/` | Automaticamente por contexto de domínio | Instruções complementares que Claude absorve ao trabalhar num domínio |
-| **Plugins** | `~/.claude/plugins/` | `/plugin install` e ativação por contexto ou commands | Extensões oficiais/community com skills, agents, hooks e MCP |
-| **Commands** | `~/.claude/commands/` | `/command-name` | Orquestração de múltiplos agents em sequência |
+| **Agents** (36) | `~/.claude/agents/` | `claude --agent {name}` ou delegação via Marcus/commands | Especialista com identidade, tools e context window próprio |
+| **Skills** (28) | `~/.claude/skills/` | Automaticamente por contexto de domínio | Boas práticas passivas que enriquecem qualquer sessão |
+| **Plugins** (6) | `~/.claude/plugins/` | `/plugin install` + ativação por contexto ou commands | Extensões oficiais/community com skills, agents, hooks |
+| **Commands** (27) | `~/.claude/commands/` | `/command-name` | Orquestração de múltiplos agents em sequência |
 | **Checks** | `~/.claude/checks/` | Referenciados por playbooks ou durante revisão | Micro-checklists de verificação reutilizáveis |
-| **Playbooks** | `~/.claude/playbooks/` | Referenciados manualmente ou por agents | Sequências de tarefas multi-step reutilizáveis |
+| **Playbooks** | `~/.claude/playbooks/` | Referenciados manualmente ou por Marcus | Sequências de tarefas multi-step reutilizáveis |
+
+**Como coexistem:**
+- **Skill** dá contexto passivo (boas práticas do domínio) → **Agent** executa com identidade e tools próprios
+- **Plugin skill** (superpowers, qodo) complementa skills locais sem conflito
+- **Agent** pode consultar **skill** para adaptar-se ao contexto (ex: `backend-dev` consulta skill `java` para detectar versão)
+- **Check** é referenciado por **agent** ou **playbook** durante revisão
+- **Marcus** conhece tudo e roteia para o componente certo
 
 ### Marcus — O Orquestrador
 
 Marcus é o **único agent com personalidade** — carismático, bom humor, fala PT-BR com naturalidade. Ele é a exceção ao tom profissional/seco definido neste CLAUDE.md. Todos os agents de pack seguem o tom profissional padrão.
 
 Marcus sabe:
-- Todos os 48 slash commands (nativos + packs + plugins) com exemplos de uso
-- Plugins instalados e seus agents/skills/commands
-- Connectors MCP disponíveis (Slack, Google Drive, Jira, etc.)
-- Documentação do Claude Code (instalação, config, features)
-- Fazer varredura do projeto ao iniciar sessão
+- Todos os 48 slash commands (21 nativos + 27 pack) com exemplos de uso
+- Plugin commands e agents: `/brainstorm`, `/write-plan`, `/execute-plan`, `/new-sdk-app`, `/code-review`, `superpowers:code-reviewer`, `agent-sdk-verifier-py`, `agent-sdk-verifier-ts`
+- Plugin skills (ativadas por contexto): `frontend-design`, `playwright`, `qodo-skills`
+- Connectors MCP disponíveis (Slack, Google Drive, Jira, Figma, GitHub, etc.)
+- Documentação do Claude Code (instalação, config, features, plugins, connectors)
+- Faz varredura do projeto ao iniciar sessão (tipo de projeto, infra, agents, plugins)
 
 ### Plugins Instalados
 
-| Plugin | Capabilities |
-|--------|-------------|
-| **superpowers** | Skills: brainstorming, TDD, debugging, code-review, writing-plans. Commands: `/brainstorm`, `/write-plan`, `/execute-plan`. Agent: `code-reviewer` |
-| **agent-sdk-dev** | Command: `/new-sdk-app`. Agents: `agent-sdk-verifier-py`, `agent-sdk-verifier-ts` |
-| **code-review** | Command: `/code-review` |
-| **frontend-design** | Skill: `frontend-design` (ativada por contexto) |
-| **playwright** | Skill para automação de browser/E2E (ativada por contexto) |
-| **qodo-skills** | Skills: `qodo-get-rules`, `qodo-get-relevant-rules`, `qodo-pr-resolver` |
+| Plugin | Commands | Agents | Skills (passivas) |
+|--------|----------|--------|-------------------|
+| **superpowers** | `/brainstorm`, `/write-plan`, `/execute-plan` | `code-reviewer` | brainstorming, TDD, debugging, code-review, writing-plans, execute-plans, git-worktrees, subagent-driven-development, verification-before-completion |
+| **agent-sdk-dev** | `/new-sdk-app` | `agent-sdk-verifier-py`, `agent-sdk-verifier-ts` | — |
+| **code-review** | `/code-review` | — | — |
+| **frontend-design** | — | — | `frontend-design` |
+| **playwright** | — | — | playwright (browser automation) |
+| **qodo-skills** | — | — | `qodo-get-rules`, `qodo-get-relevant-rules`, `qodo-pr-resolver` |
+
+**Nota:** `frontend-design`, `playwright` e `qodo-skills` não têm slash commands — atuam via skills passivas ou invocação direta como agents.
 
 ### Connectors (MCP)
 
 Connectors disponíveis em https://claude.com/connectors — 50+ integrações:
-- **Comunicação:** Slack, Gmail, Microsoft 365
+- **Comunicação:** Slack, Gmail, Microsoft 365 (Outlook, Teams, SharePoint)
 - **Gestão de projeto:** Asana, Linear, Jira, Monday.com
 - **Design:** Figma, Canva (interactive apps)
 - **Engenharia:** GitHub, Hex, Amplitude
+- **Financeiro:** Stripe, S&P Global, FactSet
 - **Custom:** qualquer remote MCP server URL (planos pagos)
 
 ### Validação do Ecossistema
@@ -95,6 +106,9 @@ Connectors disponíveis em https://claude.com/connectors — 50+ integrações:
 ```bash
 # Validar integridade dos agents
 cd ~/agents-repo && ./validate-agents.sh
+
+# Validar skills (seções obrigatórias)
+~/.claude/skills/skill-helper.sh validate <skill>
 
 # Listar agents disponíveis no Claude Code
 /agents
@@ -162,12 +176,15 @@ Marcus tem estilo próprio definido em `~/.claude/agents/marcus.md`. Ele é cari
 ## Code Style Preferences
 
 ### Java / Spring Boot (Stack Principal)
-- **Version:** Java 21+ (LTS), Spring Boot 3.x
-- **Architecture:** Hexagonal (domain, application, adapter.in, adapter.out, config)
+- **Version:** Java 8, 21 ou 25+ — detectar do `pom.xml`/`build.gradle` e adaptar features disponíveis
+- **Default para projetos novos:** Java 21+ (LTS), Spring Boot 3.2+
+- **Legacy:** Java 8 + Spring Boot 2.x — manter compatibilidade, planejar migração
+- **Cutting edge:** Java 25+ — structured concurrency, scoped values, stream gatherers
+- **Architecture:** Hexagonal (domain, application, adapter.in, adapter.out, config) — para Java 17+
 - **Domain model:** Zero dependência de framework; regras de negócio na entidade
 - **Naming:** camelCase para variáveis/métodos, PascalCase para classes, UPPER_SNAKE para constantes
 - **Packages:** `com.{org}.{service}.{domain|application|adapter.in.web|adapter.out.persistence|config}`
-- **DTOs:** `{Entity}Request`, `{Entity}Response` — separados da domain entity
+- **DTOs:** `{Entity}Request`, `{Entity}Response` — records (21+) ou classes imutáveis (8)
 - **Exceptions:** `{Entity}NotFoundException`, `{Rule}ViolationException` com código estável `{DOMAIN}-{NNN}`
 - **Error handling:** Problem Details (RFC 9457) para toda API REST
 - **API style:** `/api/v{n}/{resource}` (kebab-case, plural), OpenAPI/Swagger
@@ -175,6 +192,7 @@ Marcus tem estilo próprio definido em `~/.claude/agents/marcus.md`. Ele é cari
 - **Kafka topics:** `{domain}.{entity}.{action}.v{n}`
 - **Testing:** JUnit 5 + AssertJ + Mockito + Testcontainers; Given-When-Then; `{Class}Test`, `{Class}IntegrationTest`
 - **Build:** Maven com multi-module quando apropriado
+- **Skill de referência:** `application-development/java` — cobre features por versão (8/21/25+) com exemplos
 
 ### JavaScript / TypeScript
 - **Indentation:** 2 spaces
@@ -288,7 +306,7 @@ docs: atualiza README com passos de hardening de segurança
 - **IDE:** VS Code with Claude Code extension + project-specific extensions
 - **CLI principal:** `claude --agent marcus` para todas as sessões de trabalho
 - **Node.js:** Latest LTS; use project default package manager; always commit lockfile
-- **Java:** JDK 21+ (Eclipse Temurin); Maven wrapper (`./mvnw`)
+- **Java:** JDK 8 / 21 / 25 (Eclipse Temurin conforme projeto); Maven wrapper (`./mvnw`)
 - **Other:** FFmpeg, OpenSSL, curl, jq, kubectl, helm, terraform available
 
 ## Security Practices
@@ -304,12 +322,14 @@ docs: atualiza README com passos de hardening de segurança
 ## Testing Approach
 
 - **Test behavior, not implementation** — tests are documentation
+- **Skill de referência:** `application-development/testing` — pirâmide, patterns, quality gates, anti-patterns
 - **Coverage targets:** 100% for security/auth paths; 80%+ for new features; 80%+ mutation score para domain
 - **Naming:** `test('should return error when input is invalid')` (JS) / `shouldReturnError_whenInputInvalid()` (Java)
-- **Pattern:** Arrange-Act-Assert (Given-When-Then); mock external deps and slow operations
-- **Testcontainers:** Obrigatório para testes de integração com banco, Kafka, Redis (Java)
+- **Pattern:** Arrange-Act-Assert (Given-When-Then); mock at boundaries only (ports out)
+- **Testcontainers:** Obrigatório para testes de integração com banco, Kafka, Redis (Java) — nunca H2
+- **Contract tests:** Pact ou Spring Cloud Contract para APIs entre serviços — falha bloqueia deploy
 - **Before commit:** always run full test suite (`npm test` / `./mvnw test`)
-- **Com agents:** Use `/qa-generate` para gerar testes, `/qa-audit` para auditar cobertura
+- **Com agents:** Use `/qa-generate` para gerar testes, `/qa-audit` para auditar cobertura, `/qa-contract` para contratos
 
 ## Documentation Standards
 
@@ -335,10 +355,17 @@ Skills em `skills/` são **passivas**: cada `skills/<category>/<name>/CLAUDE.md`
 automaticamente quando o Claude trabalha em contexto relacionado a esse domínio. Não são
 invocados como comandos — diferente das skills `/skill-name` disponíveis no CLI.
 
-Categorias: `cloud-infrastructure/`, `containers-docker/`, `application-development/`,
-`devops-cicd/`, `operations-monitoring/`.
+**28 skills** em 5 categorias:
 
-**Interação com agents:** Skills passivas complementam agents. Um agent como `kubernetes-engineer` tem instruções específicas; a skill `containers-docker/kubernetes` adiciona contexto geral de boas práticas. Ambos coexistem — skill dá contexto, agent executa.
+| Categoria | Skills |
+|-----------|--------|
+| `cloud-infrastructure/` (7) | aws, kubernetes, terraform, argocd, istio, database, mysql |
+| `containers-docker/` (3) | docker, docker-ci, docker-security |
+| `application-development/` (6) | java, nodejs, python, frontend, api-design, **testing** |
+| `devops-cicd/` (5) | ci-cd, git, github-actions, release-management, workflows |
+| `operations-monitoring/` (7) | finops, incidents, monitoring-as-code, networking, observability, secrets-management, security |
+
+**Interação com agents:** Skills passivas complementam agents. O `kubernetes-engineer` tem instruções específicas; a skill `cloud-infrastructure/kubernetes` adiciona contexto geral de boas práticas. A skill `application-development/testing` enriquece todos os 8 agents do QA pack com contexto passivo de pirâmide de testes, patterns e quality gates. O `backend-dev` consulta a skill `application-development/java` para adaptar features à versão Java do projeto.
 
 **Interação com plugins:** Plugins como `superpowers` e `qodo-skills` trazem suas próprias skills que se ativam por contexto. Elas coexistem com as skills locais sem conflito.
 

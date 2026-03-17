@@ -385,4 +385,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** aws, kubernetes, terraform, observability
-**Pairs well with:** finops-agent, personal-engineering-agent
+**Pairs well with:** finops-engineer (DevOps pack), architect (Dev pack)

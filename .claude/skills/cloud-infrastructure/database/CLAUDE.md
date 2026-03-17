@@ -332,4 +332,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** aws, security, observability, terraform, nodejs, java
-**Pairs well with:** aws-platform-agent, personal-engineering-agent
+**Pairs well with:** aws-cloud-engineer (DevOps pack), architect (Dev pack)

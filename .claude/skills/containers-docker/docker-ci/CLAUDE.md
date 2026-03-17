@@ -15,7 +15,7 @@ Assume **automated pipelines and shared runners**.
 
 ---
 
-## Core CI/CD Principles
+## Core Principles
 
 - **Builds must be deterministic**
 - **Pipelines are production systems**

@@ -432,4 +432,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** kubernetes, aws, networking, incidents
-**Pairs well with:** incident-agent, k8s-platform-agent
+**Pairs well with:** sre-engineer (DevOps pack), kubernetes-engineer (DevOps pack)

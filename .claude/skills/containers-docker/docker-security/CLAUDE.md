@@ -16,7 +16,7 @@ Assume **containers may be exposed to untrusted networks**.
 
 ---
 
-## Core Security Principles
+## Core Principles
 
 - **Least privilege everywhere**
 - **Smaller images reduce attack surface**

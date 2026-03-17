@@ -4,7 +4,7 @@
 
 Centralizes all best practices for managing secrets across the stack: creation, storage, injection, rotation, and scanning. Covers AWS Secrets Manager, SSM Parameter Store, HashiCorp Vault basics, secret injection in ECS/Kubernetes, automated rotation, and CI/CD pipeline secret scanning. Applies whenever secrets, credentials, API keys, or sensitive configuration are involved.
 
-## Related Agent: security-agent
+## Related Agent: security-ops (DevOps pack)
 ## Related Playbook: secret-rotation.md
 
 ## Core Principles
@@ -352,4 +352,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** security, aws, docker-security, kubernetes, terraform
-**Pairs well with:** security-agent, personal-engineering-agent
+**Pairs well with:** security-ops (DevOps pack), architect (Dev pack)

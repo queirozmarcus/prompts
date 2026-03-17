@@ -418,4 +418,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** aws, kubernetes, security, observability
-**Pairs well with:** aws-platform-agent, incident-agent
+**Pairs well with:** aws-cloud-engineer (DevOps pack), sre-engineer (DevOps pack)
