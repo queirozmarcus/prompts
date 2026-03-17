@@ -19,7 +19,7 @@ claude --agent security-agent
 
 **Slash commands** sao o caminho mais eficiente para tarefas completas — eles delegam para os agentes certos na ordem certa. Use invocacao direta para tarefas pontuais. Use sessao dedicada quando precisa de multiplas interacoes com o mesmo especialista.
 
-**Nao sabe qual agente usar?** Pergunte ao `agent-marcus` — ele classifica seu pedido e indica o caminho certo.
+**Nao sabe qual agente usar?** Pergunte ao `marcus-agent` — ele classifica seu pedido e indica o caminho certo.
 
 ## Instalacao
 
@@ -54,7 +54,7 @@ Os 13 agentes standalone (`*.md` na raiz) ja funcionam se este diretorio for `~/
 
 ## Manual do Agent-Marcus
 
-O `agent-marcus` e o **ponto de entrada unico** do ecossistema. Ele conhece todos os 42 agentes especialistas e 22 slash commands, classifica qualquer pedido tecnico e delega para o especialista certo. Nunca implementa — apenas roteia.
+O `marcus-agent` e o **ponto de entrada unico** do ecossistema. Ele conhece todos os 42 agentes especialistas e 22 slash commands, classifica qualquer pedido tecnico e delega para o especialista certo. Nunca implementa — apenas roteia.
 
 ### Quando usar o Agent-Marcus
 
@@ -70,7 +70,7 @@ O `agent-marcus` e o **ponto de entrada unico** do ecossistema. Ele conhece todo
 **Pedido vago — Marcus classifica e roteia:**
 
 ```
-claude> Use o agent-marcus: preciso melhorar a performance de uma query lenta no PostgreSQL
+claude> Use o marcus-agent: preciso melhorar a performance de uma query lenta no PostgreSQL
 
 Marcus responde:
 → Isso e tarefa para o `database-agent` (PostgreSQL specialist).
@@ -82,7 +82,7 @@ Marcus responde:
 **Pedido cross-domain — Marcus sugere sequencia:**
 
 ```
-claude> Use o agent-marcus: preciso criar um microsservico de notificacoes do zero,
+claude> Use o marcus-agent: preciso criar um microsservico de notificacoes do zero,
         com testes, pipeline e observabilidade
 
 Marcus responde:
@@ -95,7 +95,7 @@ Marcus responde:
 **Pergunta sobre o ecossistema — Marcus responde diretamente:**
 
 ```
-claude> Use o agent-marcus: quais agentes tenho para trabalhar com Kubernetes?
+claude> Use o marcus-agent: quais agentes tenho para trabalhar com Kubernetes?
 
 Marcus responde:
 → Dois agentes cobrem K8s:
@@ -108,7 +108,7 @@ Marcus responde:
 **Decisao arquitetural — Marcus delega para o especialista:**
 
 ```
-claude> Use o agent-marcus: devo usar ECS Fargate ou EKS para 10 microsservicos?
+claude> Use o marcus-agent: devo usar ECS Fargate ou EKS para 10 microsservicos?
 
 Marcus responde:
 → Decisao de plataforma cloud — delego para o `aws-platform-agent`.
@@ -120,7 +120,7 @@ Marcus responde:
 **Incidente em producao — Marcus indica o caminho mais rapido:**
 
 ```
-claude> Use o agent-marcus: o order-service esta com latencia de 5s, preciso resolver agora
+claude> Use o marcus-agent: o order-service esta com latencia de 5s, preciso resolver agora
 
 Marcus responde:
 → Incidente ativo — use o slash command para resposta guiada:
@@ -135,24 +135,24 @@ Marcus responde:
 
 ```
 # Vago — Marcus vai precisar perguntar
-claude> Use o agent-marcus: tenho um problema de performance
+claude> Use o marcus-agent: tenho um problema de performance
 
 # Especifico — Marcus roteia direto
-claude> Use o agent-marcus: query de listagem de pedidos esta demorando 3s
+claude> Use o marcus-agent: query de listagem de pedidos esta demorando 3s
         no PostgreSQL, tabela tem 2M de registros
 ```
 
 **2. Use Marcus para descobrir commands.** Se voce esqueceu qual slash command existe para uma tarefa:
 
 ```
-claude> Use o agent-marcus: quero fazer auditoria completa no meu projeto
+claude> Use o marcus-agent: quero fazer auditoria completa no meu projeto
 → Marcus: use /qa-audit (qualidade) e /devops-audit (infra) — juntos cobrem tudo
 ```
 
 **3. Use Marcus para escolher entre standalone e pack.** Quando ambos cobrem o mesmo dominio:
 
 ```
-claude> Use o agent-marcus: preciso configurar Terraform, mas meu projeto e Python/FastAPI
+claude> Use o marcus-agent: preciso configurar Terraform, mas meu projeto e Python/FastAPI
 → Marcus: use `terraform-infra-agent` (standalone, generico). O `iac-engineer` do
   pack DevOps assume contexto Java/Spring Boot + K8s.
 ```
@@ -339,7 +339,7 @@ claude> Use o architect para criar ADR sobre a decisao de usar Redis como cache
 claude> Use o aws-platform-agent para avaliar ECS Fargate vs EKS para nosso contexto
 
 # Quando nao sabe qual especialista consultar
-claude> Use o agent-marcus para avaliar a melhor abordagem para processar 100k eventos/dia
+claude> Use o marcus-agent para avaliar a melhor abordagem para processar 100k eventos/dia
 ```
 
 ### "Preciso trabalhar com testes"
@@ -392,8 +392,8 @@ claude --agent ci-agent
 | Tarefa completa (feature, bootstrap, auditoria) | Slash command (`/dev-feature`, `/qa-audit`) |
 | Pergunta pontual a um especialista | Invocacao direta (`Use o dba para...`) |
 | Sessao longa de trabalho focado | Sessao dedicada (`claude --agent backend-dev`) |
-| Nao sabe qual agente/command usar | `agent-marcus` (gateway que classifica e delega) |
-| Decisao que cruza dominios | `agent-marcus` ou sequencia de commands |
+| Nao sabe qual agente/command usar | `marcus-agent` (gateway que classifica e delega) |
+| Decisao que cruza dominios | `marcus-agent` ou sequencia de commands |
 | Incidente em producao | `/devops-incident` ou `claude --agent incident-agent` |
 
 ### Standalone vs Pack: Qual Escolher?
@@ -404,7 +404,7 @@ claude --agent ci-agent
 |---------------------|-----|
 | Java/Spring Boot + K8s | Agentes do **pack** (mais especificos) |
 | Python, Node, Go, infra pura | Agentes **standalone** (genericos) |
-| Duvida? | Pergunte ao `agent-marcus` |
+| Duvida? | Pergunte ao `marcus-agent` |
 
 ---
 
@@ -441,7 +441,7 @@ Quando algo esta errado mas voce nao sabe onde:
 
 ```
 # 1. Pergunte ao Marcus para classificar
-claude> Use o agent-marcus: o order-service esta lento em producao, onde comeco?
+claude> Use o marcus-agent: o order-service esta lento em producao, onde comeco?
 
 # 2. Marcus pode sugerir:
 #    - Se e infra: /devops-incident ou k8s-platform-agent
@@ -545,7 +545,7 @@ Agentes genericos que funcionam em qualquer contexto, sem dependencia de team pa
 
 | Agente | Dominio | Autonomia |
 |--------|---------|-----------|
-| `agent-marcus` | Gateway orquestrador: classifica qualquer pedido e delega para o agente/command certo | Consultive |
+| `marcus-agent` | Gateway orquestrador: classifica qualquer pedido e delega para o agente/command certo | Consultive |
 | `mysql-agent` | MySQL: queries, performance, replicacao, backup | Consultive |
 | `database-agent` | PostgreSQL: schema, migrations, tuning, vacuum | Consultive |
 | `security-agent` | Seguranca: OWASP, IAM, CVE triage, audit | Advisory |
@@ -586,7 +586,7 @@ O **Agent-Marcus** fica acima de tudo como gateway — ele conhece o pipeline in
 **1. Comece pelo command, nao pelo agente.**
 Commands ja sabem quais agentes orquestrar e em qual ordem. Invocar agentes diretamente e para tarefas pontuais.
 
-**2. Use o `agent-marcus` quando nao souber por onde comecar.**
+**2. Use o `marcus-agent` quando nao souber por onde comecar.**
 Ele classifica o pedido e delega para o agente ou slash command certo. Nao use Marcus para tarefas que voce ja sabe rotear.
 
 **3. Combine packs progressivamente.**
