@@ -1,0 +1,1 @@
+Need Terraform for EKS workload with ALB, IRSA, CloudWatch logs, HPA, spot-ready node groups, tags FinOps and remote state in S3 + DynamoDB lock.

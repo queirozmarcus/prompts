@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REGISTRY="$ROOT_DIR/commands/registry.json"
+
+usage() {
+  cat <<'USAGE'
+AI-OS CLI
+
+Uso:
+  aios list
+  aios show <command> [full|lite]
+  aios run <command> [full|lite] [--context FILE]
+USAGE
+}
+
+list_cmds() {
+  python3 - "$REGISTRY" <<'PY'
+import json, sys
+from pathlib import Path
+reg = json.loads(Path(sys.argv[1]).read_text())
+for name, meta in reg['commands'].items():
+    print(f"{name}\t{meta['title']}")
+PY
+}
+
+show_cmd() {
+  local cmd="${1:-}"
+  local mode="${2:-full}"
+  python3 - "$REGISTRY" "$cmd" "$mode" <<'PY'
+import json, sys
+from pathlib import Path
+reg = json.loads(Path(sys.argv[1]).read_text())
+cmd = sys.argv[2]
+mode = sys.argv[3]
+item = reg['commands'].get(cmd)
+if not item:
+    raise SystemExit(f"Comando não encontrado: {cmd}")
+print(item[f"{mode}_prompt_file"])
+PY
+}
+
+run_cmd() {
+  local cmd="${1:-}"
+  local mode="${2:-full}"
+  shift 2 || true
+  local context_file=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --context) context_file="$2"; shift 2 ;;
+      *) echo "Argumento inválido: $1"; exit 1 ;;
+    esac
+  done
+  local rel
+  rel=$(show_cmd "$cmd" "$mode")
+  local file="$ROOT_DIR/$rel"
+  cat "$file"
+  if [[ -n "$context_file" ]]; then
+    echo
+    echo "--- CONTEXTO ANEXADO ---"
+    cat "$context_file"
+  fi
+}
+
+case "${1:-help}" in
+  list) list_cmds ;;
+  show) shift; show_cmd "$@" ;;
+  run) shift; run_cmd "$@" ;;
+  *) usage ;;
+esac

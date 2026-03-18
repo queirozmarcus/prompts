@@ -1,0 +1,8 @@
+Pod: order-service-7d9b8b6c4d-abcde
+Namespace: prod
+Symptom: CrashLoopBackOff
+Last logs:
+org.postgresql.util.PSQLException: Connection to db-prod:5432 refused
+Events:
+Readiness probe failed: HTTP probe failed with statuscode: 503
+Back-off restarting failed container
