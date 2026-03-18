@@ -601,11 +601,3 @@ Sim. Crie um `.md` com YAML frontmatter em `~/.claude/agents/` e ele aparece aut
 
 **Como atualizar?**
 Baixe a nova versão e rode `install.sh` novamente. Ele faz backup do existente antes de sobrescrever.
-
-# Plugins
-  claude plugin install code-review
-  claude plugin install superpowers@claude-plugins-official
-  claude plugin install frontend-design@claude-plugins-official
-  claude plugin install qodo-skills@claude-plugins-official
-  claude plugin install agent-sdk-dev@claude-plugins-official
-  claude plugin install playwright@claude-plugins-official
