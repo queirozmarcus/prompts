@@ -1,6 +1,8 @@
-# Claude Code Agent Ecosystem
+# Claude Code Agent Ecosystem v8
 
-**36 agentes especializados** · **30 slash commands** · **28 skills passivas** · **12 playbooks operacionais**
+**Versão:** v8.0.0 · **Sinergia:** 10/10
+
+**37 agentes especializados** · **31 slash commands** · **28 skills passivas** · **12 playbooks operacionais**
 
 Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOps/SRE, Data, e migração de monólitos — tudo orquestrado pelo **Agent-Marcus** no terminal.
 
@@ -11,8 +13,13 @@ Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOp
 ├──────────┬──────────┬───────────┬────────┬──────────────────┤
 │ Dev (6)  │ QA (8)   │ DevOps(11)│Data (3)│ Migration (7)    │
 │ 6 cmds   │ 8 cmds   │ 11 cmds   │ 2 cmds │ 4 cmds          │
+│          Utility: prompt-engineer (1 agent, 1 cmd)           │
 └──────────┴──────────┴───────────┴────────┴──────────────────┘
 ```
+
+---
+
+**Documentação completa:** [MANUAL-CASOS-DE-USO.md](MANUAL-CASOS-DE-USO.md) (70+ cenários) · [ARQUITETURA.md](ARQUITETURA.md) (deep-dive técnico + otimização de tokens)
 
 ---
 
@@ -41,10 +48,10 @@ claude --agent marcus
 ### Verificar instalação
 
 ```bash
-# Agents instalados (deve mostrar 36)
+# Agents instalados (deve mostrar 37)
 ls ~/.claude/agents/*.md | wc -l
 
-# Commands disponíveis (deve mostrar 30)
+# Commands disponíveis (deve mostrar 31)
 ls ~/.claude/commands/*.md | wc -l
 
 # Skills instaladas (deve mostrar 28)
@@ -270,6 +277,53 @@ O `gitops-engineer` configura:
 
 ---
 
+### 11. "Preciso de um prompt otimizado"
+
+```
+> /gen-prompt prompt "backend-dev implementar autenticação JWT com refresh token e RBAC"
+```
+
+O `prompt-engineer` gera um prompt otimizado que:
+- Usa o vocabulário e patterns que o `backend-dev` espera
+- Inclui contexto do projeto (Java version, hexagonal, Spring Security)
+- Define output esperado (código, migration, testes)
+- Referencia skills relevantes
+
+### 12. "Quero criar um agent novo"
+
+```
+> /gen-prompt agent "especialista em Apache Kafka: producers com Outbox Pattern, consumers idempotentes, DLQ, schema registry, consumer groups"
+```
+
+O `prompt-engineer` gera o agent completo:
+- YAML frontmatter com name, description, tools, model, color
+- System prompt com identidade, responsabilidades, regras
+- Checklist de qualidade
+- Alinhado com o ecossistema existente
+
+---
+
+---
+
+## Arquitetura Interna
+
+Para entender como o ecossistema funciona por baixo — isolamento de contexto, tokens, memória persistente, sandboxing de tools — leia o **[ARQUITETURA.md](ARQUITETURA.md)**.
+
+Destaques:
+
+- **Context isolation:** Cada agent roda em context window próprio de 200K tokens. O ruído fica isolado; só o resumo volta para Marcus.
+- **Memory persistente:** 13 agents têm memória que sobrevive entre sessões — aprendem com o tempo.
+- **Tools sandboxing:** Agents read-only (code-reviewer, architect) não podem editar arquivos. Só agents de implementação têm Write/Edit.
+- **`context: fork`:** 16 agents pesados rodam em context isolado mesmo quando invocados diretamente.
+- **Otimização de tokens:** Model selection (Sonnet default, Opus só quando precisa), `/compact` a cada 30-45min, prompts específicos. Detalhes completos em [ARQUITETURA.md](ARQUITETURA.md#8-otimização-de-tokens--guia-prático).
+
+### Agents com Memória
+
+| Scope | Agents | O que memorizam |
+|-------|--------|----------------|
+| `user` (pessoal) | marcus, architect, code-reviewer, backend-dev, prompt-engineer, sre-engineer, security-ops, observability-engineer | Preferências, patterns, decisões, incidentes |
+| `project` (time) | dba, database-engineer, mysql-engineer, qa-lead, devops-lead | Schema history, tuning, quality gates, costs |
+
 ## Todos os Slash Commands
 
 ### Nativos do Claude Code (21)
@@ -358,6 +412,12 @@ O `gitops-engineer` configura:
 | `/new-sdk-app` | agent-sdk-dev | Scaffold de agent SDK app |
 | `/code-review` | code-review | Review automatizado |
 
+### Utility Command (1)
+
+| Comando | Para quê | Exemplo |
+|---------|----------|--------|
+| `/gen-prompt` | Gerar prompts, agents, skills, commands, playbooks | `/gen-prompt prompt "backend-dev implementar JWT"` |
+
 ---
 
 ## Os 5 Times
@@ -409,6 +469,12 @@ O `gitops-engineer` configura:
 | `dba` | Schema design, Flyway, JPA/Hibernate |
 | `database-engineer` | PostgreSQL, RDS/Aurora, VACUUM, DynamoDB |
 | `mysql-engineer` | MySQL 8.x, MariaDB, pt-osc, gh-ost, GTID |
+
+### 🔮 Utility — Prompt Engineering
+
+| Agent | Especialidade |
+|-------|---------------|
+| `prompt-engineer` | Geração e otimização de prompts, agents, skills, commands, playbooks |
 
 ### 🏗️ Migration Team — Monólito → Microsserviços
 
@@ -482,11 +548,6 @@ Plugins estendem o ecossistema com capabilities extras. Para instalar:
 /plugin install qodo-skills@claude-plugins-official
 /plugin install frontend-design@claude-plugins-official
 /plugin install agent-sdk-dev@claude-plugins-official
-
-claude plugin install code-review
-
-claude plugin marketplace add queirozmarcus/context-mode
-claude plugin install context-mode@context-mode
 ```
 
 | Plugin | O que adiciona |
@@ -569,12 +630,14 @@ claude --agent marcus
 │   ├── architect.md                # Dev pack
 │   ├── backend-dev.md              # Dev pack
 │   ├── kubernetes-engineer.md      # DevOps pack
+│   ├── prompt-engineer.md          # Utility
 │   ├── ... (33 mais)
 │   └── packs-reference/            # Docs dos packs (README, CLAUDE.md)
-├── commands/                       # 30 slash commands (flat)
+├── commands/                       # 31 slash commands (flat)
 │   ├── dev-feature.md
 │   ├── full-bootstrap.md
 │   ├── devops-incident.md
+│   ├── gen-prompt.md
 │   ├── ... (27 mais)
 ├── skills/                         # 28 skills passivas
 │   ├── application-development/    # java, nodejs, python, frontend, api-design, testing
@@ -604,5 +667,19 @@ Cada agent abre um context window próprio. Multi-agent workflows usam ~4-7x mai
 **Posso adicionar meus próprios agents?**
 Sim. Crie um `.md` com YAML frontmatter em `~/.claude/agents/` e ele aparece automaticamente.
 
+**Como otimizar custos / qual modelo usar?**
+Use `/gen-prompt prompt "qual modelo para [minha tarefa]"` — o prompt-engineer analisa a tarefa e recomenda modelo (Sonnet/Opus/Haiku/opusplan), effort level e modo de execução. Para atalho rápido: `opusplan` usa Opus para planejar e Sonnet para implementar automaticamente (`claude --model opusplan --agent marcus`). Detalhes em [ARQUITETURA.md](ARQUITETURA.md#8-otimização-de-tokens--guia-prático).
+
+**Posso criar meus próprios prompts/agents/skills?**
+Sim. Use `/gen-prompt` — ele gera qualquer artefato alinhado ao ecossistema. Ex: `/gen-prompt agent "especialista em GraphQL"`
+
 **Como atualizar?**
 Baixe a nova versão e rode `install.sh` novamente. Ele faz backup do existente antes de sobrescrever.
+
+# Plugins
+  claude plugin install code-review
+  claude plugin install superpowers@claude-plugins-official
+  claude plugin install frontend-design@claude-plugins-official
+  claude plugin install qodo-skills@claude-plugins-official
+  claude plugin install agent-sdk-dev@claude-plugins-official
+  claude plugin install playwright@claude-plugins-official
