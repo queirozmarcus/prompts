@@ -2,8 +2,8 @@
 set -euo pipefail
 
 echo "═══════════════════════════════════════"
-echo "  Instalação do Ecossistema Claude Code v9"
-echo "  v9.0.0 — 37 agents + 31 commands + 13 com memória"
+echo "  Instalação do Ecossistema Claude Code v10"
+echo "  v10.0.0 — 37 agents + 31 commands + 13 com memória"
 echo "  28 skills + 12 playbooks"
 echo "═══════════════════════════════════════"
 echo ""

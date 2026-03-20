@@ -1,4 +1,6 @@
-# Manual Completo de Casos de Uso v9
+# Manual Completo de Casos de Uso v10
+
+> **ANEXO I** — Documento complementar ao [README.md](README.md). Para arquitetura interna, veja [ANEXO II](ANEXOII-ARQUITETURA.md). Para referência operacional, veja [ANEXO III](ANEXOIII-AI-OS-Brutal-Edition.md). Para capacidades dos agents, veja [ANEXO IV](ANEXOIV-AGENT-CAPABILITIES.md).
 ## Claude Code Agent Ecosystem — Guia Operacional
 
 **36 agents · 30 commands · 28 skills · 12 playbooks · 6 plugins**
@@ -270,10 +272,6 @@ Analisa `pg_stat_user_tables`, dead tuples, last vacuum, e propõe ação.
 ## 5.1 Auditoria completa de qualidade
 
 ```
-> marcus deleque uma Auditoria completa de qualidade para /qa-audit. Se precisar gere um prompt e deleque.
-> marcus rode o /gen-prompt command "qa-audit" pra ter um contexto melhor. 
-> /gen-prompt command "qa-audit para Safe Pet: auditoria completa de qualidade, cobertura, testes E2E, segurança OWASP, LGPD compliance" 
-> 
 > /qa-audit
 ```
 
@@ -905,7 +903,7 @@ cd claude-home
 
 ## 12.5 Entender a arquitetura
 
-Para detalhes completos sobre como agents funcionam internamente — context isolation, tokens, memória, sandboxing — leia o **[ARQUITETURA.md](ARQUITETURA.md)**.
+Para detalhes completos sobre como agents funcionam internamente — context isolation, tokens, memória, sandboxing — leia o **[ANEXO II — Arquitetura](ANEXOII-ANEXOII-ARQUITETURA.md)**.
 
 Destaques rápidos:
 - Cada subagent roda em **200K tokens isolados** — não polui Marcus
@@ -1062,7 +1060,7 @@ claude --agent marcus                  # default — modelo por agent
 3. Subagent > exploração direta (150K → 500 tokens no seu contexto)
 4. Batch > múltiplas mensagens (1 inference em vez de 5)
 
-Detalhes completos em **[ARQUITETURA.md](ARQUITETURA.md#8-otimização-de-tokens--guia-prático)**.
+Detalhes completos em **[ANEXO II — Arquitetura](ANEXOII-ANEXOII-ARQUITETURA.md)**.
 
 ## 13.8 Pair Programming com Marcus
 
@@ -1206,6 +1204,113 @@ O `prompt-engineer` reescreve com:
 - Output esperado
 - Constraints
 
+
+
+
+---
+
+# PARTE 16 — WORKFLOW DO MARCUS (5 FASES)
+
+O Marcus v10 opera com um workflow estruturado de 5 fases. Entender o fluxo ajuda a tirar o máximo dele.
+
+## 16.1 Fase 1: Triagem + Brainstorm
+
+Quando você faz um pedido, Marcus:
+1. Busca na **episodic memory**: "já resolvemos algo parecido?"
+2. Se o pedido é **ambíguo**, pergunta UMA coisa antes de prosseguir
+3. Classifica: **direta** (executa rápido) ou **complexa** (abre brainstorm)
+
+Para tarefas complexas, Marcus abre brainstorm colaborativo:
+```
+User: quero criar um sistema de billing recorrente
+
+Marcus (visão): Billing recorrente, desacoplado do monólito, retry automático.
+Architect (técnico): Saga Pattern para consistência, Kafka para eventos,
+  webhook para gateway. Risco: idempotência nos retries.
+```
+
+## 16.2 Fase 2: Plan
+
+O agent especialista estrutura o plano:
+```
+Etapa 1: /dev-bootstrap billing-service
+Etapa 2: /dev-feature "cobrança recorrente com Saga"
+Etapa 3: /dev-feature "integração com gateway"
+Etapa 4: /qa-generate + /qa-contract
+Etapa 5: /devops-provision billing-service aws
+```
+
+O **prompt-engineer** traduz cada etapa em prompt otimizado. Fork de memória consolida contexto.
+
+## 16.3 Fase 3: Aprovação + Salvar Plano
+
+Marcus apresenta o plano e aguarda sua validação:
+```
+Marcus: Plano para billing-service:
+  1. /dev-bootstrap → estrutura hexagonal
+  2. /dev-feature → Saga Pattern + Kafka
+  3. /dev-feature → gateway webhook
+  4. /qa-generate + /qa-contract → testes
+  5. /devops-provision → infra AWS
+
+  Custo estimado: ~$8-12
+  Risco: idempotência nos retries
+
+  Aprova? Quer ajustar?
+```
+
+Após aprovação, o plano é **salvo automaticamente** em `.claude/plans/`:
+```bash
+cat .claude/plans/2026-03-19-billing-service.md
+# Status: APROVADO
+# Etapas: 5
+# Riscos: idempotência nos retries
+```
+
+## 16.4 Fase 4: Execução
+
+Agents executam na sequência. Marcus monitora e atualiza o plano:
+```
+1. ✅ /dev-bootstrap billing-service → CONCLUÍDO
+2. 🔄 /dev-feature "Saga Pattern" → EM EXECUÇÃO
+3. ⏳ /dev-feature "gateway" → PENDENTE
+4. ⏳ /qa-generate → PENDENTE
+5. ⏳ /devops-provision → PENDENTE
+```
+
+## 16.5 Fase 5: Pós-execução
+
+Marcus valida o output contra o plano, sugere próximo passo e atualiza memória:
+```
+Marcus: Billing-service completo! ✅
+  Todas as 5 etapas concluídas.
+
+  Próximos passos:
+  1. /qa-security billing-service (testes OWASP)
+  2. /devops-observe billing-service (dashboards)
+
+  Quer executar algum?
+```
+
+## 16.6 Retomar plano interrompido
+
+Se a sessão cair no meio da execução:
+```
+> tenho um plano pendente de billing-service
+
+Marcus: [lê .claude/plans/2026-03-19-billing-service.md]
+Encontrei! Plano com 5 etapas, 2 concluídas, 3 pendentes.
+Retomo da etapa 3? (/dev-feature "gateway webhook")
+```
+
+## 16.7 Listar planos
+
+```bash
+ls .claude/plans/
+# 2026-03-19-billing-service.md
+# 2026-03-15-notification-service.md
+# 2026-03-10-migration-payment.md
+```
 
 # PARTE 14 — REFERÊNCIA RÁPIDA
 
