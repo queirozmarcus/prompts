@@ -1,0 +1,272 @@
+<svg width="100%" viewBox="0 0 680 1680" xmlns="http://www.w3.org/2000/svg" style="background: white; font-family: system-ui, -apple-system, sans-serif;">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<style>
+  text { font-family: system-ui, -apple-system, sans-serif; }
+  .th { font-size: 14px; font-weight: 500; fill: #2C2C2A; }
+  .ts { font-size: 12px; font-weight: 400; fill: #5F5E5A; }
+  .arr { stroke: #888780; stroke-width: 1.5; }
+  
+  /* Color fills */
+  .f-coral rect, .f-coral path { fill: #FAECE7; stroke: #993C1D; }
+  .f-coral .th { fill: #712B13; }
+  .f-coral .ts { fill: #993C1D; }
+  
+  .f-gray rect { fill: #F1EFE8; stroke: #5F5E5A; }
+  .f-gray .th { fill: #2C2C2A; }
+  .f-gray .ts { fill: #5F5E5A; }
+  
+  .f-purple rect { fill: #EEEDFE; stroke: #534AB7; }
+  .f-purple .th { fill: #26215C; }
+  .f-purple .ts { fill: #534AB7; }
+  
+  .f-amber path { fill: #FAEEDA; stroke: #854F0B; }
+  .f-amber .ts { fill: #633806; }
+  
+  .f-teal rect { fill: #E1F5EE; stroke: #0F6E56; }
+  .f-teal .th { fill: #04342C; }
+  .f-teal .ts { fill: #0F6E56; }
+  
+  .f-pink rect { fill: #FBEAF0; stroke: #993556; }
+  .f-pink .ts { fill: #72243E; }
+  
+  .f-blue rect { fill: #E6F1FB; stroke: #185FA5; }
+  .f-blue .th { fill: #042C53; }
+  .f-blue .ts { fill: #185FA5; }
+  
+  .f-green rect { fill: #EAF3DE; stroke: #3B6D11; }
+  .f-green .th { fill: #173404; }
+  .f-green .ts { fill: #3B6D11; }
+</style>
+
+<!-- ═══ FASE 1: TRIAGEM + BRAINSTORM ═══ -->
+<g class="f-coral">
+  <rect x="130" y="20" width="420" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle" dominant-baseline="central">Fase 1: Triagem + brainstorm</text>
+</g>
+
+<line x1="340" y1="64" x2="340" y2="92" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-gray">
+  <rect x="190" y="92" width="300" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="114" text-anchor="middle" dominant-baseline="central">Marcus recebe o problema</text>
+</g>
+
+<line x1="340" y1="136" x2="340" y2="164" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Episodic Memory search -->
+<g class="f-purple">
+  <rect x="140" y="164" width="400" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="184" text-anchor="middle" dominant-baseline="central">Busca episodic memory</text>
+  <text class="ts" x="340" y="204" text-anchor="middle" dominant-baseline="central">"Já resolvemos algo parecido?"</text>
+</g>
+
+<line x1="340" y1="220" x2="340" y2="250" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Decision: ambíguo? -->
+<g class="f-amber">
+  <path d="M340 250 L440 285 L340 320 L240 285 Z" stroke-width="0.5"/>
+  <text class="ts" x="340" y="289" text-anchor="middle" dominant-baseline="central">Ambíguo?</text>
+</g>
+
+<!-- Ambíguo → clarificação -->
+<line x1="440" y1="285" x2="570" y2="285" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<text class="ts" x="486" y="275">Sim</text>
+
+<g class="f-pink">
+  <rect x="530" y="306" width="130" height="56" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="595" y="326" text-anchor="middle" dominant-baseline="central">Pergunta UMA</text>
+  <text class="ts" x="595" y="344" text-anchor="middle" dominant-baseline="central">coisa ao user</text>
+</g>
+<line x1="575" y1="285" x2="575" y2="306" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<path d="M530 334 L490 334 L490 260 L380 260" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+<!-- Não ambíguo → complexidade -->
+<line x1="340" y1="320" x2="340" y2="356" class="arr" marker-end="url(#arrow)"/>
+<text class="ts" x="290" y="342">Claro</text>
+
+<!-- Decision: complexa? -->
+<g class="f-amber">
+  <path d="M340 356 L440 391 L340 426 L240 391 Z" stroke-width="0.5"/>
+  <text class="ts" x="340" y="389" text-anchor="middle" dominant-baseline="central">Complexa?</text>
+  <text class="ts" x="340" y="405" text-anchor="middle" dominant-baseline="central">Exige design?</text>
+</g>
+
+<!-- Direta → pula brainstorm -->
+<line x1="440" y1="391" x2="570" y2="391" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<text class="ts" x="486" y="381">Direta</text>
+
+<g class="f-teal">
+  <rect x="540" y="410" width="120" height="36" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="600" y="428" text-anchor="middle" dominant-baseline="central">Pula p/ Fase 2</text>
+</g>
+<line x1="580" y1="391" x2="580" y2="410" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<path d="M600 446 L600 730 L460 730" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+<!-- Complexa → brainstorm -->
+<line x1="340" y1="426" x2="340" y2="462" class="arr" marker-end="url(#arrow)"/>
+<text class="ts" x="290" y="448">Complexa</text>
+
+<!-- Brainstorm container -->
+<g class="f-purple">
+  <rect x="80" y="462" width="480" height="170" rx="14" stroke-width="0.5"/>
+  <text class="th" x="320" y="486" text-anchor="middle" dominant-baseline="central">Brainstorm colaborativo</text>
+</g>
+
+<g class="f-coral">
+  <rect x="100" y="502" width="210" height="110" rx="8" stroke-width="0.5"/>
+  <text class="th" x="205" y="526" text-anchor="middle" dominant-baseline="central">Marcus</text>
+  <text class="ts" x="205" y="550" text-anchor="middle" dominant-baseline="central">Define visão macro</text>
+  <text class="ts" x="205" y="568" text-anchor="middle" dominant-baseline="central">Objetivo de negócio</text>
+  <text class="ts" x="205" y="586" text-anchor="middle" dominant-baseline="central">Enquadra o problema</text>
+</g>
+
+<g class="f-blue">
+  <rect x="340" y="502" width="200" height="110" rx="8" stroke-width="0.5"/>
+  <text class="th" x="440" y="526" text-anchor="middle" dominant-baseline="central">Agent especialista</text>
+  <text class="ts" x="440" y="550" text-anchor="middle" dominant-baseline="central">Viabilidade técnica</text>
+  <text class="ts" x="440" y="568" text-anchor="middle" dominant-baseline="central">Tendências e insights</text>
+  <text class="ts" x="440" y="586" text-anchor="middle" dominant-baseline="central">Riscos e trade-offs</text>
+</g>
+
+<line x1="310" y1="544" x2="340" y2="544" stroke="#7F77DD" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="340" y1="574" x2="310" y2="574" stroke="#7F77DD" stroke-width="1" marker-end="url(#arrow)"/>
+
+<!-- ═══ FASE 2: PLAN ═══ -->
+<line x1="320" y1="632" x2="320" y2="670" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-teal">
+  <rect x="140" y="670" width="360" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="320" y="692" text-anchor="middle" dominant-baseline="central">Fase 2: Plan</text>
+</g>
+
+<line x1="320" y1="714" x2="320" y2="744" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-blue">
+  <rect x="80" y="744" width="480" height="200" rx="14" stroke-width="0.5"/>
+  <text class="th" x="320" y="768" text-anchor="middle" dominant-baseline="central">Agent especialista estrutura o plano</text>
+</g>
+
+<g class="f-gray">
+  <rect x="100" y="786" width="210" height="68" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="205" y="808" text-anchor="middle" dominant-baseline="central">Rota lógica</text>
+  <text class="ts" x="205" y="828" text-anchor="middle" dominant-baseline="central">Quebra em etapas</text>
+</g>
+
+<g class="f-gray">
+  <rect x="330" y="786" width="210" height="68" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="435" y="808" text-anchor="middle" dominant-baseline="central">Entregáveis técnicos</text>
+  <text class="ts" x="435" y="828" text-anchor="middle" dominant-baseline="central">"O quê" e "para quem"</text>
+</g>
+
+<line x1="320" y1="864" x2="320" y2="882" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-pink">
+  <rect x="160" y="882" width="320" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="320" y="896" text-anchor="middle" dominant-baseline="central">Prompt engineer</text>
+  <text class="ts" x="320" y="914" text-anchor="middle" dominant-baseline="central">Traduz em comandos de alta performance</text>
+</g>
+
+<!-- Fork de memória -->
+<g class="f-purple">
+  <rect x="460" y="936" width="160" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="540" y="954" text-anchor="middle" dominant-baseline="central">Fork de memória</text>
+</g>
+<line x1="460" y1="954" x2="420" y2="954" stroke="#7F77DD" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+<!-- ═══ FASE 3: REFINAMENTO / APROVAÇÃO ═══ -->
+<line x1="320" y1="944" x2="320" y2="1000" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-coral">
+  <rect x="130" y="1000" width="380" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="320" y="1022" text-anchor="middle" dominant-baseline="central">Fase 3: Refinamento / aprovação</text>
+</g>
+
+<line x1="320" y1="1044" x2="320" y2="1072" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-gray">
+  <rect x="140" y="1072" width="360" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="320" y="1092" text-anchor="middle" dominant-baseline="central">Usuário valida o plano</text>
+  <text class="ts" x="320" y="1112" text-anchor="middle" dominant-baseline="central">Aprova, ajusta ou rejeita</text>
+</g>
+
+<line x1="320" y1="1128" x2="320" y2="1158" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-amber">
+  <path d="M320 1158 L420 1188 L320 1218 L220 1188 Z" stroke-width="0.5"/>
+  <text class="ts" x="320" y="1192" text-anchor="middle" dominant-baseline="central">Aprovado?</text>
+</g>
+
+<!-- Ajustar → volta fase 2 -->
+<line x1="220" y1="1188" x2="68" y2="1188" stroke="#888780" stroke-width="0.5"/>
+<path d="M68 1188 L68 726 L140 726" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<text class="ts" x="72" y="960">Ajustar</text>
+
+<!-- Aprovado → execução -->
+<line x1="420" y1="1188" x2="520" y2="1188" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<text class="ts" x="454" y="1178">Aprovado</text>
+
+<!-- ═══ FASE 4: EXECUÇÃO ═══ -->
+<g class="f-teal">
+  <rect x="490" y="1210" width="160" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="570" y="1232" text-anchor="middle" dominant-baseline="central">Fase 4: Execução</text>
+</g>
+<line x1="540" y1="1188" x2="540" y2="1210" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+<line x1="570" y1="1254" x2="570" y2="1282" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-blue">
+  <rect x="440" y="1282" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="550" y="1302" text-anchor="middle" dominant-baseline="central">Agents executam</text>
+  <text class="ts" x="550" y="1322" text-anchor="middle" dominant-baseline="central">Prompts otimizados pelo PE</text>
+</g>
+
+<!-- ═══ FASE 5: PÓS-EXECUÇÃO ═══ -->
+<line x1="550" y1="1338" x2="550" y2="1370" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-green">
+  <rect x="100" y="1370" width="500" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="350" y="1392" text-anchor="middle" dominant-baseline="central">Fase 5: Pós-execução</text>
+</g>
+
+<line x1="350" y1="1414" x2="350" y2="1442" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-green">
+  <rect x="100" y="1442" width="500" height="140" rx="14" stroke-width="0.5"/>
+</g>
+
+<g class="f-gray">
+  <rect x="120" y="1458" width="220" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="230" y="1474" text-anchor="middle" dominant-baseline="central">Validação do output</text>
+  <text class="ts" x="230" y="1492" text-anchor="middle" dominant-baseline="central">Atende o plano?</text>
+</g>
+
+<g class="f-gray">
+  <rect x="360" y="1458" width="220" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="470" y="1474" text-anchor="middle" dominant-baseline="central">Próximo passo proativo</text>
+  <text class="ts" x="470" y="1492" text-anchor="middle" dominant-baseline="central">Sugere command/playbook</text>
+</g>
+
+<g class="f-purple">
+  <rect x="120" y="1518" width="220" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="230" y="1540" text-anchor="middle" dominant-baseline="central">Atualiza agent memory</text>
+</g>
+
+<g class="f-purple">
+  <rect x="360" y="1518" width="220" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="470" y="1540" text-anchor="middle" dominant-baseline="central">Registra episodic memory</text>
+</g>
+
+<!-- Loop back -->
+<line x1="350" y1="1582" x2="350" y2="1630" class="arr" marker-end="url(#arrow)"/>
+
+<g class="f-coral">
+  <rect x="160" y="1630" width="380" height="36" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="350" y="1648" text-anchor="middle" dominant-baseline="central">Volta para Fase 1 (aguarda próximo pedido)</text>
+</g>
+
+</svg>
