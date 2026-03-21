@@ -1,3 +1,0 @@
-Pipeline stage failed: deploy
-Tool: Helm
-Error: UPGRADE FAILED: cannot patch "order-service" with kind Deployment: admission webhook denied the request because image tag does not exist
