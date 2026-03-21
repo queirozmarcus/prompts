@@ -16,6 +16,7 @@ Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOp
 │          Utility: prompt-engineer (1 agent, 1 cmd)           │
 └──────────┴──────────┴───────────┴────────┴──────────────────┘
 ```
+<img src="img/AgentEcosystem.png" alt="Agent Ecosystem" width="800">
 
 ---
 
@@ -33,7 +34,7 @@ Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOp
 
 ## Workflow do Marcus — 5 Fases
 
-<img src="marcus-workflow-v10.svg" alt="Marcus Workflow" width="700">
+<img src="img/marcus-workflow-v10.svg" alt="Marcus Workflow" width="500">
 ```
 ![Marcus Workflow](marcus-workflow-v10.svg)
 ```
