@@ -18,7 +18,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: red
 memory: user
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Security Ops — Secrets, RBAC, Network e Compliance

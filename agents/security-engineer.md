@@ -16,7 +16,7 @@ description: |
 tools: Read, Grep, Glob, Bash
 model: sonnet
 color: red
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Security Engineer — Segurança Transversal

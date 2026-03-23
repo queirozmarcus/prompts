@@ -1,8 +1,8 @@
 # Claude Code Agent Ecosystem v10
 
-**Versão:** v10.0.0 · **Sinergia:** 10/10
+**Versão:** v10.2.0 · **Sinergia:** 10/10
 
-**37 agentes especializados** · **31 slash commands** · **28 skills passivas** · **12 playbooks operacionais**
+**37 agentes especializados** · **31 slash commands** · **28 skills passivas** · **13 playbooks operacionais**
 
 Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOps/SRE, Data, e migração de monólitos — tudo orquestrado pelo **Agent-Marcus** no terminal.
 
@@ -12,7 +12,7 @@ Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOp
 │       Orquestrador · Claude Code Expert · PT-BR · 🚀         │
 ├──────────┬──────────┬───────────┬────────┬──────────────────┤
 │ Dev (6)  │ QA (8)   │ DevOps(11)│Data (3)│ Migration (7)    │
-│ 6 cmds   │ 8 cmds   │ 11 cmds   │ 2 cmds │ 4 cmds          │
+│ 6 cmds   │ 8 cmds   │ 10 cmds   │ 2 cmds │ 4 cmds          │
 │          Utility: prompt-engineer (1 agent, 1 cmd)           │
 └──────────┴──────────┴───────────┴────────┴──────────────────┘
 ```
@@ -28,6 +28,8 @@ Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOp
 | [ANEXO II — Arquitetura](ANEXOII-ARQUITETURA.md) | Context isolation, tokens, memória, tools, otimização | "Como funciona por baixo?" |
 | [ANEXO III — AI-OS Brutal Edition](ANEXOIII-AI-OS-Brutal-Edition.md) | Referência operacional direta, sem teoria | "Me dá o comando, sem enrolação" |
 | [ANEXO IV — Agent Capabilities](ANEXOIV-AGENT-CAPABILITIES.md) | Capacidades detalhadas dos 37 agents (Marcus consulta para routing) | "O que o backend-dev sabe fazer?" |
+| [ANEXO V — Manual de Validacao do Ecossistema](ANEXOV-MANUAL-VALIDACAO-ECO.md) | Guia completo do `validate-ecosystem.sh` com 8 modulos e exemplos | "Como valido se esta tudo OK?" |
+| [ANEXOVI — Modelos por Perfil de Agent](ANEXOVI-Modelos-por-Perfil-de-Agent.md) | Estratégia de atribuição de modelos (haiku, sonnet, opus) aos 37 agents + quando fazer override | "Qual modelo usar para minha tarefa?" |
 
 ---
 
@@ -36,7 +38,7 @@ Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOp
 
 <img src="img/marcus-workflow-v10.svg" alt="Marcus Workflow" width="500">
 ```
-![Marcus Workflow](marcus-workflow-v10.svg)
+![Marcus Workflow](img/marcus-workflow-v10.svg)
 ```
 
 O Marcus opera em 5 fases para toda demanda:
@@ -75,21 +77,20 @@ chmod +x install.sh
 claude --agent marcus
 ```
 
-### Verificar instalação
+### Verificar instalacao
 
 ```bash
-# Agents instalados (deve mostrar 37)
-ls ~/.claude/agents/*.md | wc -l
+# Validacao completa do ecossistema (agents, commands, skills, playbooks, plugins, cross-refs)
+~/.claude/validate-ecosystem.sh
 
-# Commands disponíveis (deve mostrar 31)
-ls ~/.claude/commands/*.md | wc -l
-
-# Skills instaladas (deve mostrar 28)
-find ~/.claude/skills -name "CLAUDE.md" | wc -l
+# Validacao detalhada (mostra todos os checks)
+~/.claude/validate-ecosystem.sh --verbose
 
 # Listar agents no Claude Code
 claude agents
 ```
+
+Para detalhes sobre cada modulo de validacao, veja o **[ANEXO V — Manual de Validacao](ANEXOV-MANUAL-VALIDACAO-ECO.md)**.
 
 ---
 
@@ -345,7 +346,7 @@ Destaques:
 - **Memory persistente:** 13 agents têm memória que sobrevive entre sessões — aprendem com o tempo.
 - **Tools sandboxing:** Agents read-only (code-reviewer, architect) não podem editar arquivos. Só agents de implementação têm Write/Edit.
 - **`context: fork`:** 16 agents pesados rodam em context isolado mesmo quando invocados diretamente.
-- **Model por perfil:** Haiku (4 agents de análise) · Sonnet (31 agents de implementação) · Opus (2 agents de arquitetura). Marcus recomenda override quando a complexidade da tarefa justifica., `/compact` a cada 30-45min, prompts específicos. Detalhes completos em [ANEXOII — Arquitetura: Otimização de Tokens](ANEXOII-ARQUITETURA.md).
+- **Model por perfil:** Haiku (4 agents de análise) · Sonnet (31 agents de implementação) · Opus (2 agents de arquitetura). Veja [ANEXOVI — Modelos por Perfil de Agent](ANEXOVI-Modelos-por-Perfil-de-Agent.md) para estratégia completa e quando fazer override., `/compact` a cada 30-45min, prompts específicos. Detalhes completos em [ANEXOII — Arquitetura: Otimização de Tokens](ANEXOII-ARQUITETURA.md).
 
 ### Agents com Memória
 
@@ -401,7 +402,7 @@ Destaques:
 | `/qa-security` | Testes OWASP | `/qa-security order-service` |
 | `/qa-e2e` | Testes end-to-end | `/qa-e2e "checkout completo"` |
 
-### Pack DevOps (11)
+### Pack DevOps (10)
 
 | Comando | Para quê | Exemplo |
 |---------|----------|---------|
@@ -543,7 +544,7 @@ Gerenciar skills:
 
 ---
 
-## Playbooks Operacionais (12)
+## Playbooks Operacionais (13)
 
 Guias passo-a-passo para operações críticas. Marcus os sugere quando o contexto pede.
 
@@ -561,6 +562,7 @@ Guias passo-a-passo para operações críticas. Marcus os sugere quando o contex
 | `dr-restore.md` | Restore real de DR |
 | `dependency-update.md` | Atualizar dependências com segurança |
 | `network-troubleshooting.md` | Debug de rede, DNS, VPC |
+| `validate-ecosystem.md` | Validação semântica do ecossistema (requer LLM) |
 
 ---
 
@@ -592,6 +594,7 @@ Plugins estendem o ecossistema com capabilities extras. Para instalar:
 | **frontend-design** | Skill passiva para frontend/UI de alta qualidade |
 | **playwright** | Skill passiva para automação de browser e E2E |
 | **qodo-skills** | Skills passivas para regras de teste e PR resolver |
+| **episodic-memory** | Memória semântica de longo prazo via SQLite + vector search |
 
 ---
 
@@ -659,20 +662,19 @@ claude --agent marcus
 ```
 ~/.claude/
 ├── CLAUDE.md                       # Instruções globais
-├── agents/                         # 36 agents (flat)
-│   ├── marcus-agent.md             # Orquestrador global
+├── agents/                         # 37 agents (flat)
+│   ├── marcus.md                   # Orquestrador global
 │   ├── architect.md                # Dev pack
 │   ├── backend-dev.md              # Dev pack
 │   ├── kubernetes-engineer.md      # DevOps pack
 │   ├── prompt-engineer.md          # Utility
-│   ├── ... (33 mais)
-│   └── packs-reference/            # Docs dos packs (README, CLAUDE.md)
+│   └── ... (32 mais)
 ├── commands/                       # 31 slash commands (flat)
 │   ├── dev-feature.md
 │   ├── full-bootstrap.md
 │   ├── devops-incident.md
 │   ├── gen-prompt.md
-│   ├── ... (27 mais)
+│   └── ... (27 mais)
 ├── skills/                         # 28 skills passivas
 │   ├── application-development/    # java, nodejs, python, frontend, api-design, testing
 │   ├── cloud-infrastructure/       # aws, kubernetes, terraform, argocd, istio, database, mysql
@@ -680,9 +682,10 @@ claude --agent marcus
 │   ├── devops-cicd/                # ci-cd, git, github-actions, release-management, workflows
 │   ├── operations-monitoring/      # finops, incidents, monitoring-as-code, networking, observability, secrets-management, security
 │   └── skill-helper.sh
-├── playbooks/                      # 12 playbooks operacionais
-├── checks/                         # Micro-checklists (populate as needed)
-└── plugins/                        # Gerenciado pelo Claude Code
+├── workflows/                      # 4 workflow YAML templates (Fase 4 do Marcus)
+├── playbooks/                      # 13 playbooks operacionais
+├── checks/                         # 7 micro-checklists de quality gates
+└── plugins/                        # 7 plugins instalados
 ```
 
 ---
@@ -702,7 +705,7 @@ Cada agent abre um context window próprio. Multi-agent workflows usam ~4-7x mai
 Sim. Crie um `.md` com YAML frontmatter em `~/.claude/agents/` e ele aparece automaticamente.
 
 **Como otimizar custos / qual modelo usar?**
-Use `/gen-prompt prompt "qual modelo para [minha tarefa]"` — o prompt-engineer analisa a tarefa e recomenda modelo (Sonnet/Opus/Haiku/opusplan), effort level e modo de execução. Para atalho rápido: `opusplan` usa Opus para planejar e Sonnet para implementar automaticamente (`claude --model opusplan --agent marcus`). Detalhes em [ANEXOII — Arquitetura: Otimização de Tokens](ANEXOII-ARQUITETURA.md).
+Use `/gen-prompt prompt "qual modelo para [minha tarefa]"` — o prompt-engineer analisa a tarefa e recomenda modelo (Sonnet/Opus/Haiku/opusplan), effort level e modo de execução. Para atalho rápido: `opusplan` usa Opus para planejar e Sonnet para implementar automaticamente (`claude --model opusplan --agent marcus`). Detalhes completos em [ANEXOVI — Modelos por Perfil de Agent](ANEXOVI-Modelos-por-Perfil-de-Agent.md) e [ANEXOII — Arquitetura: Otimização de Tokens](ANEXOII-ARQUITETURA.md).
 
 **Posso criar meus próprios prompts/agents/skills?**
 Sim. Use `/gen-prompt` — ele gera qualquer artefato alinhado ao ecossistema. Ex: `/gen-prompt agent "especialista em GraphQL"`

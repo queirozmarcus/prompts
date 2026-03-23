@@ -16,7 +16,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: yellow
 context: fork
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Integration Test Engineer — Testcontainers e Infra Real

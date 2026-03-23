@@ -17,7 +17,7 @@ tools: Read, Grep, Glob, Bash
 model: haiku
 color: blue
 memory: project
-version: 10.0.0
+version: 10.2.0
 ---
 
 # DevOps Lead — Estratégia de Plataforma e FinOps

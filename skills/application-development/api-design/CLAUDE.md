@@ -382,4 +382,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** nodejs, java, security, observability
-**Pairs well with:** api-designer (Dev pack), architect (Dev pack)
+**Pairs well with:** architect (Dev pack)

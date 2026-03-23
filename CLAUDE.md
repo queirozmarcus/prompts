@@ -1,6 +1,6 @@
 # CLAUDE.md (Global)
 
-**Versão:** v10.0.0
+**Versão:** v10.2.0
 
 ## Mapa de Documentação
 
@@ -12,6 +12,7 @@
 | **ANEXO III** — AI-OS Brutal Edition | Referência operacional direta, sem teoria |
 | **marcus-workflow-v10.svg** | Diagrama visual do workflow de 5 fases do Marcus |
 | **ANEXO IV** — Agent Capabilities | Capacidades detalhadas dos 37 agents. Marcus consulta para routing informado |
+| **ANEXO V** — Manual de Validacao | Guia completo do `validate-ecosystem.sh`: 8 modulos, exemplos, troubleshooting |
 
 
 Instruções globais do Claude Code para todos os repositórios. Overrides de projeto em `./CLAUDE.md`.
@@ -25,6 +26,7 @@ Instruções globais do Claude Code para todos os repositórios. Overrides de pr
 ├── memory/            # Memória persistente entre sessões (MEMORY.md + tópicos)
 ├── skills/            # 28 passive skills — ativados por contexto de domínio
 ├── checks/            # Micro-checklists reutilizáveis (Kubernetes, Terraform, etc.)
+├── workflows/         # Workflow YAML definitions para Fase 4 do Marcus
 ├── playbooks/         # Sequências de tarefas reutilizáveis
 ├── agents/            # 37 subagentes (Marcus + 35 de pack + 1 utility)
 │   └── marcus.md      # Orquestrador global — ponto de entrada principal
@@ -67,18 +69,20 @@ O ambiente de desenvolvimento é operado por **Agent-Marcus** como orquestrador 
 
 | Conceito | Onde vive | Como ativa | Propósito |
 |----------|-----------|------------|-----------|
-| **Agents** (36) | `~/.claude/agents/` | `claude --agent {name}` ou delegação via Marcus/commands | Especialista com identidade, tools e context window próprio |
+| **Agents** (37) | `~/.claude/agents/` | `claude --agent {name}` ou delegação via Marcus/commands | Especialista com identidade, tools e context window próprio |
 | **Skills** (28) | `~/.claude/skills/` | Automaticamente por contexto de domínio | Boas práticas passivas que enriquecem qualquer sessão |
-| **Plugins** (6) | `~/.claude/plugins/` | `/plugin install` + ativação por contexto ou commands | Extensões oficiais/community com skills, agents, hooks |
-| **Commands** (27) | `~/.claude/commands/` | `/command-name` | Orquestração de múltiplos agents em sequência |
-| **Checks** | `~/.claude/checks/` | Referenciados por playbooks ou durante revisão | Micro-checklists de verificação reutilizáveis |
-| **Playbooks** | `~/.claude/playbooks/` | Referenciados manualmente ou por Marcus | Sequências de tarefas multi-step reutilizáveis |
+| **Plugins** (7) | `~/.claude/plugins/` | `/plugin install` + ativação por contexto ou commands | Extensões oficiais/community com skills, agents, hooks |
+| **Commands** (31) | `~/.claude/commands/` | `/command-name` | Orquestração de múltiplos agents em sequência |
+| **Checks** | `~/.claude/checks/` | Referenciados por workflows, playbooks ou durante revisao | Micro-checklists de verificacao e quality gates |
+| **Workflows** (4+) | `~/.claude/workflows/` | Marcus seleciona na Fase 2, executa na Fase 4 | Execution engine YAML com paralelismo, quality gates, retry, rollback |
+| **Playbooks** | `~/.claude/playbooks/` | Referenciados manualmente ou por Marcus | Sequencias de tarefas multi-step reutilizaveis |
 
 **Como coexistem:**
-- **Skill** dá contexto passivo (boas práticas do domínio) → **Agent** executa com identidade e tools próprios
+- **Skill** da contexto passivo (boas praticas do dominio) -> **Agent** executa com identidade e tools proprios
 - **Plugin skill** (superpowers, qodo) complementa skills locais sem conflito
-- **Agent** pode consultar **skill** para adaptar-se ao contexto (ex: `backend-dev` consulta skill `java` para detectar versão)
-- **Check** é referenciado por **agent** ou **playbook** durante revisão
+- **Agent** pode consultar **skill** para adaptar-se ao contexto (ex: `backend-dev` consulta skill `java` para detectar versao)
+- **Workflow** define a sequencia de execucao com dependency graph -> **Agent** executa cada step -> **Check** valida quality gates entre steps
+- **Check** e referenciado por **workflow**, **agent** ou **playbook** durante revisao
 - **Marcus** conhece tudo e roteia para o componente certo
 
 ### Marcus — O Orquestrador
@@ -117,16 +121,26 @@ Connectors disponíveis em https://claude.com/connectors — 50+ integrações:
 - **Financeiro:** Stripe, S&P Global, FactSet
 - **Custom:** qualquer remote MCP server URL (planos pagos)
 
-### Validação do Ecossistema
+### Validacao do Ecossistema
 
 ```bash
-# Validar integridade dos agents
-cd ~/agents-repo && ./validate-agents.sh
+# Validacao completa (agents, commands, skills, playbooks, plugins, cross-refs)
+~/.claude/validate-ecosystem.sh
 
-# Validar skills (seções obrigatórias)
+# Validacao detalhada (mostra todos os checks)
+~/.claude/validate-ecosystem.sh --verbose
+
+# Validar apenas uma secao
+~/.claude/validate-ecosystem.sh --section agents
+~/.claude/validate-ecosystem.sh --section workflows
+
+# Auto-fix (remove junk files)
+~/.claude/validate-ecosystem.sh --fix
+
+# Validar skill individual
 ~/.claude/skills/skill-helper.sh validate <skill>
 
-# Listar agents disponíveis no Claude Code
+# Listar agents disponiveis no Claude Code
 /agents
 
 # Listar plugins instalados
@@ -439,7 +453,43 @@ Cada playbook é um `.md` com passos ordenados que podem referenciar agents, com
 
 Playbooks são referência — executados manualmente ou citados pelo Marcus quando o contexto pede.
 
+## Versioning Strategy
+
+**Fonte única de verdade:** `~/.claude/VERSION`
+
+Este arquivo contém a versão do ecossistema (ex: `10.2.0`). Todos os artefatos sincronizam com esta versão:
+- 37 agents (frontmatter `version:` field)
+- 6 documentos (CLAUDE.md, README.md, 4 ANEXOs)
+- Validado automaticamente por `validate-ecosystem.sh`
+
+**Como bumpar versão:**
+
+1. Editar `~/.claude/VERSION` com a nova versão (ex: `10.3.0`)
+2. Rodar `~/.claude/validate-ecosystem.sh`
+   - Script detecta discrepâncias entre VERSION e arquivos
+   - Mostra WARNINGS apontando exatamente quais arquivos atualizar
+3. Atualizar os arquivos apontados pelo validador:
+   - 6 docs: `sed -i 's/v10.2.0/v10.3.0/g' CLAUDE.md README.md ANEXO*.md`
+   - 37 agents: `find agents -name "*.md" -exec sed -i 's/version: 10.2.0/version: 10.3.0/g' {} \;`
+4. Validar novamente: `~/.claude/validate-ecosystem.sh` (esperado: 0 WARN)
+5. Commitar: `git commit -am "chore: bump ecosystem to 10.3.0"`
+
+**Validação:**
+
+```bash
+~/.claude/validate-ecosystem.sh
+# Esperado: 1157+ PASS, 0 WARN, 0 FAIL
+```
+
+**Por que manual?** Bumps são raros (~1-2x/ano). Processo manual é simples, direto, e suficiente. Se necessário automatizar no futuro, pode-se criar script.
+
 ## Changelog
+
+### v10.2.0
+- **Update geral de versão** — toda documentação e artefatos para v10.2.0
+- **Estabilidade consolidada** — 37 agents, 31 commands, 28 skills, 13 playbooks, 7 plugins operacionais
+- **Validação contínua** — ecosystem validation com 8 módulos checando coerência total
+- **Memória episódica ativa** — busca semântica em conversas passadas integrada ao Marcus
 
 ### v10.0.0
 - **Marcus reescrito** com workflow de 5 fases: Triagem+Brainstorm → Plan → Aprovação → Execução → Pós-execução
@@ -462,7 +512,7 @@ Playbooks são referência — executados manualmente ou citados pelo Marcus qua
 - **31 slash commands** incluindo /devops-cloud, /devops-mesh, /qa-security, /gen-prompt
 - **28 skills** com referências de agents corrigidas e testing skill adicionada
 - **13 agents com memória persistente** (8 user + 5 project)
-- **13 playbooks** com referências de agents corrigidas
+- **12 playbooks** com referências de agents corrigidas
 - **Model Strategy** — cada agent tem modelo default + Marcus recomenda override
 - **ANEXO II (ARQUITETURA)** — deep-dive: context isolation, tokens, memory, tools, otimização
 - **Prompt-engineer** + /gen-prompt — geração de artefatos e recomendação de modelo

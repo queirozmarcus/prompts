@@ -1,0 +1,419 @@
+workflow:
+  name: infrastructure-provision
+  description: >
+    Provisionamento completo de infraestrutura: IaC (Terraform) → Kubernetes →
+    CI/CD + Observability + Security (paralelo) → Consolidacao pelo DevOps Lead.
+    Steps com mesma dependencia rodam em paralelo automaticamente via dependency graph.
+  version: "1.0.0"
+  author: marcus
+  tags: [devops, infra]
+
+  params:
+    - name: service_name
+      required: true
+      description: >
+        Nome do servico para o qual provisionar infraestrutura (kebab-case).
+        Usado para nomear recursos Terraform, namespaces K8s e pipelines.
+    - name: cloud
+      required: true
+      description: >
+        Cloud provider alvo (aws, gcp, azure). Determina o provider Terraform,
+        registry de container, IAM model e servicos especificos.
+
+  defaults:
+    retry:
+      max_attempts: 1
+      strategy: immediate
+    on_fail: abort
+    timeout: 600
+
+  steps:
+    # ─── FASE 1: Infrastructure as Code ────────────────────────────────
+    - id: iac
+      type: agent
+      agent: iac-engineer
+      description: >
+        Provisiona infraestrutura base com Terraform: VPC/network, database,
+        registry, IAM roles e state backend. Valida com fmt e validate.
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Tarefa
+        Crie a infraestrutura base com Terraform para o servico:
+
+        1. **Layout de diretorio**:
+           ```
+           infra/{{cloud}}/{environment}/{{service_name}}/
+           ├── main.tf
+           ├── variables.tf
+           ├── outputs.tf
+           ├── versions.tf
+           ├── backend.tf
+           └── terraform.tfvars
+           ```
+           Com environments: dev, staging, prod.
+
+        2. **State backend**:
+           - AWS: S3 bucket + DynamoDB lock table
+           - GCP: GCS bucket
+           - Azure: Storage Account
+           State isolado por ambiente.
+
+        3. **Networking**:
+           - VPC/VNet dedicada ou shared (conforme padrao da org)
+           - Subnets publicas e privadas
+           - NAT Gateway (com alerta de custo)
+           - Security groups / firewall rules (least privilege)
+
+        4. **Database**:
+           - RDS PostgreSQL (AWS) / Cloud SQL (GCP) / Azure DB for PostgreSQL
+           - Multi-AZ para prod, single para dev/staging
+           - Backup automatico, encryption at rest
+           - Parameter group otimizado
+
+        5. **Container Registry**:
+           - ECR (AWS) / Artifact Registry (GCP) / ACR (Azure)
+           - Lifecycle policy para cleanup de images antigas
+
+        6. **IAM**:
+           - Service account / role para o servico (least privilege)
+           - IRSA (AWS) / Workload Identity (GCP) para pods K8s
+
+        7. **Modules**: use modulos versionados com variables tipadas e outputs documentados.
+
+        8. **Validacao**: garanta que `terraform fmt -check` e `terraform validate` passam.
+
+        ## Alertas de custo
+        - NAT Gateway: ~$32/mes + data transfer
+        - RDS Multi-AZ: dobra o custo da instancia
+        - Documente estimativa de custo mensal
+
+        ## Output esperado
+        - Terraform files completos para 3 ambientes
+        - README com instrucoes de apply
+        - Estimativa de custo
+      outputs:
+        - path: "infra/{{cloud}}/"
+          type: directory
+          description: "Terraform files para todos os ambientes"
+        - artifact: iac_outputs
+          type: text
+          description: "Outputs do Terraform (endpoints, ARNs, etc.)"
+      checks:
+        - terraform-fmt
+        - terraform-validate
+
+    # ─── FASE 2: Kubernetes ────────────────────────────────────────────
+    - id: kubernetes
+      type: agent
+      agent: kubernetes-engineer
+      description: >
+        Configura recursos Kubernetes: Helm chart, namespaces, RBAC,
+        network policies, HPA, PDB e ingress.
+      depends_on: [iac]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Infra provisionada
+        {{step.iac.outputs.iac_outputs}}
+
+        ## Tarefa
+        Configure todos os recursos Kubernetes para o servico:
+
+        1. **Namespace**: `{{service_name}}-{env}` com labels e resource quotas.
+
+        2. **Helm chart** em `helm/{{service_name}}/`:
+           - **Deployment**:
+             - Liveness probe: HTTP GET /actuator/health/liveness (initialDelay: 30s)
+             - Readiness probe: HTTP GET /actuator/health/readiness (initialDelay: 15s)
+             - Startup probe: HTTP GET /actuator/health (failureThreshold: 30, period: 10s)
+             - Resources requests/limits (CPU: 250m/1000m, Memory: 512Mi/1Gi como baseline)
+             - Graceful shutdown: preStop sleep 5s + terminationGracePeriodSeconds: 30
+             - Anti-affinity para spread entre nodes
+             - Topology spread constraints
+           - **Service**: ClusterIP, porta 8080
+           - **Ingress**: com TLS, annotations para cloud LB
+           - **HPA**: min 2, max 10, target CPU 70%, memory 80%
+           - **PDB**: minAvailable: 1 (ou maxUnavailable: 1 se replicas > 2)
+           - **ServiceAccount**: com annotations para IRSA/Workload Identity
+           - **ConfigMap**: application.yml por ambiente
+           - **ExternalSecret**: referencia a secrets no Secrets Manager
+
+        3. **Network Policies**:
+           - Ingress: apenas do ingress controller e servicos autorizados
+           - Egress: apenas para database, messaging e DNS
+
+        4. **RBAC**: Role + RoleBinding para o ServiceAccount (least privilege).
+
+        5. **values-{env}.yaml**: overrides para dev (1 replica), staging (2), prod (3+).
+
+        ## Output esperado
+        - Helm chart completo
+        - Network Policies
+        - RBAC manifests
+        - `helm template` sem erros
+      outputs:
+        - path: "helm/{{service_name}}/"
+          type: directory
+          description: "Helm chart completo"
+        - artifact: k8s_resources
+          type: text
+          description: "Resumo dos recursos K8s criados"
+      checks:
+        - probes-defined
+        - resource-limits
+
+    # ─── FASE 3a: CI/CD Pipeline ──────────────────────────────────────
+    # cicd, observability e security dependem todos de kubernetes,
+    # portanto rodam em PARALELO automaticamente via dependency graph.
+    - id: cicd
+      type: agent
+      agent: cicd-engineer
+      description: >
+        Cria pipelines CI/CD com build, test, security scan, deploy
+        multi-ambiente e rollback automatico.
+      depends_on: [kubernetes]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Infra e K8s configurados
+        - IaC: {{step.iac.outputs.iac_outputs}}
+        - K8s: {{step.kubernetes.outputs.k8s_resources}}
+
+        ## Tarefa
+        Crie pipelines CI/CD completos (GitHub Actions):
+
+        1. **CI Pipeline** (`.github/workflows/ci.yml`):
+           - Triggers: push to main, pull_request
+           - Jobs:
+             - **build**: checkout, setup-java-21, cache-maven, compile
+             - **test**: unit tests, integration tests (Testcontainers)
+             - **coverage**: jacoco report, fail if < 80%
+             - **security**: trivy image scan, OWASP dependency-check
+             - **docker**: build + push to registry (tagged com SHA + semver)
+           - Caching: Maven dependencies, Docker layers
+
+        2. **CD Pipeline** (`.github/workflows/cd.yml`):
+           - Trigger: tag push (v*)
+           - Jobs:
+             - **deploy-staging**: helm upgrade --install no staging
+             - **smoke-test**: curl health endpoint + basic E2E
+             - **approval**: environment protection rule (manual approval)
+             - **deploy-prod**: helm upgrade --install no prod
+             - **verify**: health check + metricas baseline
+           - Rollback: automatico se health check falha em 5min
+
+        3. **PR Pipeline** (`.github/workflows/pr.yml`):
+           - Lint, format check (spotless/checkstyle)
+           - Test coverage diff
+           - Trivy scan do Dockerfile
+
+        4. **Secrets necessarios**: liste todos os secrets que devem ser
+           configurados no GitHub (com instrucoes de setup).
+
+        5. **Action versions**: todas pinned por SHA (nao por tag).
+
+        ## Output esperado
+        - 3 pipeline files completos
+        - Documentacao de secrets necessarios
+        - README de CI/CD
+      outputs:
+        - path: ".github/workflows/*.yml"
+          description: "GitHub Actions pipelines"
+        - artifact: cicd_config
+          type: text
+          description: "Configuracao de CI/CD e secrets necessarios"
+
+    # ─── FASE 3b: Observability ────────────────────────────────────────
+    - id: observability
+      type: agent
+      agent: observability-engineer
+      description: >
+        Configura stack de observability: metricas Prometheus, logging
+        estruturado, tracing OpenTelemetry e alertas.
+      depends_on: [kubernetes]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## K8s configurado
+        {{step.kubernetes.outputs.k8s_resources}}
+
+        ## Tarefa
+        Configure observability completa:
+
+        1. **Metricas (Prometheus)**:
+           - ServiceMonitor para scraping do /actuator/prometheus
+           - Metricas RED (Rate, Errors, Duration) por endpoint
+           - Metricas custom de negocio
+           - Grafana dashboard (JSON model):
+             - Overview: request rate, error rate, latency p50/p95/p99
+             - JVM: heap, GC, threads
+             - Business: metricas de dominio
+
+        2. **Logging**:
+           - Logback config: JSON structured em prod, console em dev
+           - Campos obrigatorios: timestamp, level, service, trace-id, span-id, message
+           - Sem dados sensiveis nos logs (PII masking)
+           - Log aggregation: labels padrao para Loki/ELK
+
+        3. **Tracing (OpenTelemetry)**:
+           - OTEL javaagent configurado via env vars no Helm
+           - Sampling: 100% dev, 10% staging, 1% prod (adaptavel)
+           - Propagacao W3C TraceContext
+           - Spans custom para operacoes criticas de negocio
+
+        4. **Alertas (PrometheusRule)**:
+           - CRITICAL: error rate > 10% por 5min, pod CrashLoopBackOff
+           - WARNING: error rate > 5% por 5min, latency p99 > SLO, memory > 80%
+           - INFO: pod restarts > 3 em 1h, deployment rollback
+           - Todas com runbook_url apontando para docs/devops/runbooks/
+
+        5. **SLOs**:
+           - Availability: 99.9% (43.8min downtime/mes)
+           - Latency: p99 < 500ms
+           - Error budget tracking
+
+        ## Output esperado
+        - ServiceMonitor, PrometheusRule manifests
+        - Grafana dashboard JSON
+        - Logback config
+        - OTEL config
+        - SLO definitions
+      outputs:
+        - artifact: observability_setup
+          type: text
+          description: "Configuracao completa de observability"
+        - path: "helm/{{service_name}}/templates/servicemonitor.yaml"
+          optional: true
+          description: "ServiceMonitor manifest"
+
+    # ─── FASE 3c: Security ─────────────────────────────────────────────
+    - id: security
+      type: agent
+      agent: security-ops
+      description: >
+        Audita e aplica hardening de seguranca em toda a infraestrutura:
+        Terraform, Kubernetes, pipeline e aplicacao.
+      depends_on: [kubernetes]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Artefatos para auditoria
+        - IaC: {{step.iac.outputs.iac_outputs}}
+        - K8s: {{step.kubernetes.outputs.k8s_resources}}
+
+        ## Tarefa
+        Audite seguranca e aplique hardening:
+
+        1. **Terraform**:
+           - Encryption at rest em todos os recursos (database, storage, etc.)
+           - Security groups: apenas portas necessarias, sem 0.0.0.0/0 em ingress
+           - IAM: least privilege, sem wildcards em policies
+           - Logging habilitado (CloudTrail, VPC Flow Logs, etc.)
+           - Checkov/tfsec scan sem findings CRITICAL
+
+        2. **Kubernetes**:
+           - Pod Security Standards: restricted profile
+           - SecurityContext: runAsNonRoot, readOnlyRootFilesystem, drop ALL capabilities
+           - Network Policies: deny-all default + allow explicito
+           - Secrets: via External Secrets Operator (nao plaintext em ConfigMap)
+           - ServiceAccount: automountServiceAccountToken: false (exceto quando necessario)
+           - Image: tag imutavel (SHA digest), nao :latest
+
+        3. **Pipeline**:
+           - Actions pinned por SHA
+           - Trivy scan de imagens (fail on CRITICAL)
+           - OWASP dependency-check (fail on CVSS >= 7)
+           - SAST com CodeQL ou Semgrep
+           - Secrets nao expostos em logs (masking)
+
+        4. **Compliance checklist**: gere checklist de compliance
+           (SOC2/ISO27001 basico) com status de cada item.
+
+        ## Output esperado
+        - Findings categorizados (CRITICAL/HIGH/MEDIUM/LOW)
+        - Correcoes aplicadas aos artefatos
+        - Compliance checklist
+        - Scan results summary
+      outputs:
+        - artifact: security_audit
+          type: text
+          description: "Audit findings, correcoes e compliance checklist"
+
+    # ─── FASE 4: Consolidacao ──────────────────────────────────────────
+    - id: consolidate
+      type: agent
+      agent: devops-lead
+      description: >
+        Consolida todos os artefatos de infra, valida consistencia entre
+        Terraform/K8s/Pipeline/Observability e gera relatorio final.
+      depends_on: [cicd, observability, security]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Artefatos para consolidacao
+        - IaC: {{step.iac.outputs.iac_outputs}}
+        - K8s: {{step.kubernetes.outputs.k8s_resources}}
+        - CI/CD: {{step.cicd.outputs.cicd_config}}
+        - Observability: {{step.observability.outputs.observability_setup}}
+        - Security: {{step.security.outputs.security_audit}}
+
+        ## Tarefa
+        Consolide e valide toda a infraestrutura provisionada:
+
+        1. **Validacao de consistencia**:
+           - Terraform outputs matcham valores usados no Helm chart?
+           - Pipeline referencia a registry e cluster corretos?
+           - Secrets necessarios pela app estao todos provisionados?
+           - Network policies permitem comunicacao necessaria?
+           - Probes apontam para endpoints corretos?
+
+        2. **Checklist de deployment**:
+           - [ ] Terraform apply em dev (manual review)
+           - [ ] Helm install em dev
+           - [ ] Pipeline CI roda com sucesso
+           - [ ] Health check OK
+           - [ ] Metricas aparecendo no Grafana
+           - [ ] Alertas configurados e testados
+           - [ ] Repeat para staging e prod
+
+        3. **Estimativa de custo**:
+           - Custo mensal estimado por ambiente (dev, staging, prod)
+           - Itens de maior custo identificados
+           - Sugestoes de otimizacao (spot instances, reserved, etc.)
+
+        4. **Runbook operacional**: documente em `docs/devops/runbooks/`:
+           - Como escalar manualmente
+           - Como fazer rollback
+           - Como acessar logs e metricas
+           - Procedimento de incident response
+
+        5. **Gaps e riscos**: identifique qualquer gap entre os artefatos
+           ou risco operacional nao mitigado.
+
+        ## Output esperado
+        - Relatorio de consolidacao
+        - Deployment checklist
+        - Estimativa de custo
+        - Runbook operacional
+        - Lista de gaps/riscos
+      outputs:
+        - artifact: consolidation_report
+          type: text
+          description: "Relatorio de consolidacao com checklist, custos e riscos"
+        - path: "docs/devops/runbooks/"
+          type: directory
+          optional: true
+          description: "Runbooks operacionais"

@@ -1,0 +1,388 @@
+workflow:
+  name: feature-implementation
+  description: >
+    Feature end-to-end: design arquitetural, API contract, schema de banco,
+    implementacao, code review, geracao de testes e relatorio final.
+    Cobre o ciclo completo de uma feature desde concepcao ate entrega validada.
+  version: "1.0.0"
+  author: marcus
+  tags: [dev, qa, feature]
+
+  params:
+    - name: feature_description
+      required: true
+      description: >
+        Descricao completa da feature a ser implementada.
+        Inclua requisitos funcionais, regras de negocio e criterios de aceite.
+    - name: service_name
+      required: false
+      default: auto-detect
+      description: >
+        Nome do servico onde a feature sera implementada.
+        Se omitido, Marcus detecta automaticamente pelo projeto corrente.
+
+  defaults:
+    retry:
+      max_attempts: 1
+      strategy: immediate
+    on_fail: abort
+    timeout: 300
+
+  steps:
+    # ─── FASE 1: Design Arquitetural ───────────────────────────────────
+    - id: design
+      type: agent
+      agent: architect
+      description: >
+        Analisa a feature, define decisoes arquiteturais, identifica
+        componentes afetados e produz ADR com trade-offs documentados.
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Feature: {{feature_description}}
+
+        ## Tarefa
+        Analise a feature descrita acima e produza um design arquitetural completo:
+
+        1. **Analise de impacto**: identifique todos os componentes, camadas e modulos
+           afetados pela feature. Mapeie dependencias upstream e downstream.
+
+        2. **Decisoes arquiteturais**: para cada decisao relevante, documente:
+           - Opcoes consideradas (minimo 2)
+           - Trade-offs de cada opcao (performance, complexidade, manutenibilidade)
+           - Opcao recomendada com justificativa
+
+        3. **Modelo de dominio**: identifique entidades novas ou alteradas,
+           value objects, aggregates e domain events envolvidos.
+
+        4. **Integracao**: defina como a feature se integra com o sistema existente.
+           Aponte contratos entre camadas (ports/adapters se hexagonal).
+
+        5. **Riscos e mitigacoes**: liste riscos tecnicos e proponha mitigacoes.
+
+        6. **ADR**: gere um Architecture Decision Record em `docs/architecture/adr/`
+           seguindo o template: Status, Context, Decision, Consequences.
+
+        ## Output esperado
+        - ADR documentado
+        - Diagrama textual dos componentes afetados
+        - Lista de entidades/DTOs necessarios
+        - Estimativa de complexidade (baixa/media/alta)
+      outputs:
+        - artifact: design_document
+          type: text
+          description: "Documento de design arquitetural com ADR"
+        - path: "docs/architecture/adr/ADR-*.md"
+          optional: true
+          description: "Architecture Decision Record"
+
+    # ─── FASE 2: API Contract ──────────────────────────────────────────
+    - id: api
+      type: agent
+      agent: api-designer
+      description: >
+        Define o contrato da API REST com endpoints, DTOs, status codes,
+        validacoes e documentacao OpenAPI.
+      depends_on: [design]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Feature: {{feature_description}}
+
+        ## Design aprovado
+        {{step.design.outputs.design_document}}
+
+        ## Tarefa
+        Com base no design arquitetural aprovado, defina o contrato completo da API:
+
+        1. **Endpoints**: para cada endpoint necessario:
+           - Metodo HTTP + path (`/api/v1/{resource}`, kebab-case, plural)
+           - Request body (JSON schema com tipos, required fields, validacoes)
+           - Response body (JSON schema com exemplos)
+           - Status codes (sucesso + todos os erros possiveis)
+           - Headers relevantes (Authorization, Content-Type, etc.)
+
+        2. **DTOs**: defina `{Entity}Request` e `{Entity}Response` como records (Java 21+)
+           ou classes imutaveis (Java 8). Inclua validacoes Bean Validation.
+
+        3. **Error responses**: siga Problem Details (RFC 9457) com codigo estavel
+           `{DOMAIN}-{NNN}` para cada tipo de erro.
+
+        4. **Versionamento**: justifique se usa versao existente ou nova.
+
+        5. **OpenAPI spec**: gere snippet OpenAPI 3.0 YAML para os endpoints.
+
+        ## Output esperado
+        - Especificacao completa dos endpoints
+        - DTOs com validacoes
+        - Error catalog com codigos estaveis
+        - Snippet OpenAPI YAML
+      outputs:
+        - artifact: api_contract
+          type: text
+          description: "Contrato da API com endpoints, DTOs e error catalog"
+
+    # ─── FASE 3: Schema de Banco ───────────────────────────────────────
+    - id: schema
+      type: agent
+      agent: dba
+      description: >
+        Define alteracoes de schema necessarias e gera Flyway migrations.
+        Pode nao ser necessario se a feature nao altera o modelo de dados.
+      depends_on: [design]
+      on_fail: warn
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Feature: {{feature_description}}
+
+        ## Design aprovado
+        {{step.design.outputs.design_document}}
+
+        ## Tarefa
+        Analise se a feature requer alteracoes no schema do banco de dados.
+
+        **Se NAO requer alteracoes:**
+        Retorne explicitamente "Sem alteracoes de schema necessarias" com justificativa.
+
+        **Se requer alteracoes:**
+
+        1. **Analise de impacto**: identifique tabelas afetadas, novas tabelas,
+           colunas adicionadas/removidas, indices e constraints.
+
+        2. **Migration Flyway**: gere arquivo `V{next}__{description}.sql` com:
+           - DDL completo (CREATE TABLE, ALTER TABLE)
+           - Indices para colunas usadas em WHERE/JOIN
+           - Constraints (FK, UNIQUE, CHECK) com nomes explicitos
+           - Comentarios explicando decisoes
+
+        3. **Rollback**: gere migration de rollback correspondente.
+
+        4. **Performance**: avalie impacto em tabelas grandes (> 1M rows).
+           Sugira estrategia de migracao online se necessario.
+
+        5. **Dados existentes**: defina estrategia para dados existentes
+           (default values, data migration, backfill).
+
+        ## Output esperado
+        - Flyway migration SQL
+        - Rollback migration SQL
+        - Analise de impacto em performance
+      outputs:
+        - path: "src/main/resources/db/migration/V*__*.sql"
+          optional: true
+          description: "Flyway migration files"
+        - artifact: schema_changes
+          type: text
+          description: "Descricao das alteracoes de schema ou confirmacao de que nao ha alteracoes"
+
+    # ─── FASE 4: Implementacao ─────────────────────────────────────────
+    - id: implement
+      type: agent
+      agent: backend-dev
+      description: >
+        Implementa a feature seguindo arquitetura hexagonal, API contract
+        e schema definidos nos steps anteriores.
+      depends_on: [api, schema]
+      retry:
+        max_attempts: 2
+        strategy: immediate
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Feature: {{feature_description}}
+
+        ## Artefatos dos steps anteriores
+        - Design: {{step.design.outputs.design_document}}
+        - API Contract: {{step.api.outputs.api_contract}}
+        - Schema: {{step.schema.outputs.schema_changes}}
+
+        ## Tarefa
+        Implemente a feature seguindo rigorosamente os artefatos definidos:
+
+        1. **Domain layer** (sem dependencia de framework):
+           - Entidades com regras de negocio encapsuladas
+           - Value objects imutaveis
+           - Domain events (se aplicavel)
+           - Excecoes de dominio com codigos estaveis
+
+        2. **Application layer**:
+           - Use cases (um por operacao)
+           - Port interfaces (in + out)
+           - DTOs de request/response conforme API contract
+
+        3. **Adapter layer**:
+           - **adapter.in.web**: Controllers REST com Bean Validation
+           - **adapter.out.persistence**: Repository implementations
+           - Mappers entre domain e persistence models
+
+        4. **Config layer**:
+           - Spring beans e configuration classes
+
+        5. **Qualidade**:
+           - Codigo autoexplicativo (comments so para "why", nao "what")
+           - Error handling com Problem Details (RFC 9457)
+           - Logging estruturado nos pontos criticos
+           - Nenhum secret hardcoded
+
+        ## Regras
+        - Java 21+ com records para DTOs
+        - Hexagonal architecture: domain NUNCA importa framework
+        - Flyway migrations conforme step schema (se houver)
+        - Todos os endpoints conforme API contract
+
+        ## Output esperado
+        - Todos os arquivos .java necessarios
+        - Codigo compila sem erros
+      outputs:
+        - path: "src/main/java/**/*.java"
+          description: "Arquivos de implementacao Java"
+      checks:
+        - "Code compiles without errors"
+
+    # ─── FASE 5: Code Review ───────────────────────────────────────────
+    - id: review
+      type: agent
+      agent: code-reviewer
+      description: >
+        Review completo do codigo implementado focando em qualidade,
+        seguranca, performance e aderencia ao design.
+      depends_on: [implement]
+      on_fail: warn
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Feature: {{feature_description}}
+
+        ## Tarefa
+        Faca code review completo de toda a implementacao gerada no step anterior.
+
+        ### Criterios de review:
+
+        1. **Aderencia ao design**: o codigo segue o design arquitetural e API contract?
+           Desvios devem ser justificados ou flagados como problema.
+
+        2. **Qualidade de codigo**:
+           - Naming conventions (camelCase, PascalCase conforme padrao)
+           - Single Responsibility Principle em cada classe
+           - Imutabilidade onde possivel
+           - Sem code smells (God class, feature envy, long methods)
+
+        3. **Seguranca**:
+           - Input validation em todos os endpoints
+           - Sem SQL injection, XSS, ou IDOR
+           - Secrets nao hardcoded
+           - Authorization checks onde necessario
+
+        4. **Performance**:
+           - N+1 queries
+           - Indices adequados para queries
+           - Paginacao em listagens
+
+        5. **Error handling**:
+           - Problem Details (RFC 9457) em todas as respostas de erro
+           - Excecoes de dominio com codigos estaveis
+           - Logging adequado (sem dados sensiveis nos logs)
+
+        6. **Testabilidade**:
+           - Codigo facilmente testavel (injecao de dependencia, ports)
+           - Sem static methods que dificultam mock
+
+        ### Formato do review
+        Para cada finding:
+        - **Severidade**: CRITICAL / HIGH / MEDIUM / LOW / INFO
+        - **Arquivo:linha**: localizacao exata
+        - **Descricao**: o que esta errado e por que
+        - **Sugestao**: como corrigir
+
+        ### Veredito final
+        - APPROVED: sem findings CRITICAL ou HIGH
+        - CHANGES_REQUESTED: com findings CRITICAL ou HIGH
+      outputs:
+        - artifact: review_findings
+          type: text
+          description: "Code review findings com severidade e sugestoes"
+
+    # ─── FASE 6: Geracao de Testes ─────────────────────────────────────
+    - id: generate_tests
+      type: agent
+      agent: test-automation-engineer
+      description: >
+        Gera suite completa de testes (unit + integration) para a
+        implementacao, seguindo a piramide de testes.
+      depends_on: [implement]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Feature: {{feature_description}}
+
+        ## Tarefa
+        Gere testes completos para toda a implementacao da feature:
+
+        1. **Unit tests** (JUnit 5 + AssertJ + Mockito):
+           - Testes para cada entidade de dominio (regras de negocio)
+           - Testes para cada use case (application layer)
+           - Testes para mappers
+           - Mock apenas nas boundaries (ports out)
+           - Naming: `shouldDoSomething_whenCondition()`
+           - Pattern: Given-When-Then com comentarios
+
+        2. **Integration tests** (Testcontainers):
+           - Testes de repository com banco real (Testcontainers, NUNCA H2)
+           - Testes de controller com MockMvc ou WebTestClient
+           - Testes end-to-end do fluxo completo
+           - Naming: `{Class}IntegrationTest`
+
+        3. **Cobertura**:
+           - 100% para paths de seguranca/autorizacao
+           - 80%+ para logica de negocio
+           - Edge cases: null inputs, listas vazias, limites de validacao
+
+        4. **Qualidade dos testes**:
+           - Cada teste testa UM comportamento
+           - Testes independentes (sem ordem de execucao)
+           - Dados de teste isolados (sem dependencia entre testes)
+           - Assertions claras com mensagens descritivas
+
+        ## Output esperado
+        - Arquivos de teste em src/test/java/
+        - Todos os testes compilam e passam
+        - Cobertura minima de 80% nas classes novas
+      outputs:
+        - path: "src/test/java/**/*Test.java"
+          description: "Arquivos de testes unitarios"
+        - path: "src/test/java/**/*IntegrationTest.java"
+          optional: true
+          description: "Arquivos de testes de integracao"
+      checks:
+        - "Tests compile and pass"
+
+    # ─── FASE 7: Relatorio Final ───────────────────────────────────────
+    - id: summary
+      type: report
+      description: >
+        Consolida resultados de todos os steps em um relatorio final
+        com status, artefatos gerados e proximos passos.
+      depends_on: [review, generate_tests]
+      template: |
+        ## Feature Concluida: {{feature_description}}
+
+        **Servico:** {{service_name}}
+        **Steps:** {{workflow.steps_completed}} / {{workflow.steps_total}}
+
+        ### Artefatos Gerados
+        - Design arquitetural + ADR
+        - API contract com OpenAPI spec
+        - Schema migrations (se aplicavel)
+        - Implementacao completa (hexagonal)
+        - Code review findings
+        - Suite de testes (unit + integration)
+
+        ### Code Review
+        {{step.review.outputs.review_findings}}
+
+        ### Proximos Passos
+        - `/qa-audit` para analise detalhada de cobertura
+        - `/qa-contract` se houver integracao entre servicos
+        - `/dev-review` para review manual adicional
+        - `git add` + `git commit` dos arquivos gerados

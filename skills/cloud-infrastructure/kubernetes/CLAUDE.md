@@ -425,4 +425,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** aws, argocd, istio, observability, security, finops
-**Pairs well with:** kubernetes-engineer (DevOps pack), platform-engineer (Migration pack), gitops-engineer (DevOps pack), architect (Dev pack)
+**Pairs well with:** kubernetes-engineer (DevOps pack), gitops-engineer (DevOps pack), architect (Dev pack)

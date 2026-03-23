@@ -16,7 +16,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: orange
 memory: user
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Code Reviewer — Qualidade, Padrões e Segurança

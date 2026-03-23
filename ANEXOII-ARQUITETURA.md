@@ -1,7 +1,7 @@
 # Arquitetura do Agent Ecosystem v10
 
 > **ANEXO II** — Documento complementar ao [README.md](README.md). Para casos de uso práticos, veja [ANEXO I](ANEXOI-MANUAL-CASOS-DE-USO.md). Para referência operacional, veja [ANEXO III](ANEXOIII-AI-OS-Brutal-Edition.md). Para capacidades dos agents, veja [ANEXO IV](ANEXOIV-AGENT-CAPABILITIES.md).
-**Versão:** v10.0.0
+**Versão:** v10.2.0
 
 ## Como Agents, Skills, Commands e Memory Funcionam por Baixo
 

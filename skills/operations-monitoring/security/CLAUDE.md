@@ -204,4 +204,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** aws, kubernetes, docker-security, terraform, ci-cd
-**Pairs well with:** security-ops (DevOps pack), security-engineer (Migration pack), aws-cloud-engineer (DevOps pack), architect (Dev pack)
+**Pairs well with:** aws-cloud-engineer (DevOps pack), architect (Dev pack)

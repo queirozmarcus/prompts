@@ -4,7 +4,7 @@
 
 Best practices for software testing in Java/Spring Boot, Node.js, and Python projects. Covers test strategy, test pyramid, naming, patterns, frameworks, quality gates, and anti-patterns. This skill provides **passive context** for any work involving tests — complementing the QA pack agents when they are invoked, and providing baseline guidance when they are not.
 
-**Related agents:** `qa-lead`, `qa-engineer` (Migration pack) (QA pack — strategy), `unit-test-engineer` (QA pack), `integration-test-engineer` (QA pack), `contract-test-engineer` (QA pack), `performance-engineer` (QA pack), `e2e-test-engineer` (QA pack), `test-automation-engineer` (QA pack), `security-test-engineer` (QA pack)
+**Related agents:** `qa-lead` (QA pack — strategy), `unit-test-engineer` (QA pack), `integration-test-engineer` (QA pack), `contract-test-engineer` (QA pack), `performance-engineer` (QA pack), `e2e-test-engineer` (QA pack), `test-automation-engineer` (QA pack), `security-test-engineer` (QA pack)
 
 **Related commands:** `/qa-audit`, `/qa-generate`, `/qa-review`, `/qa-performance`, `/qa-flaky`, `/qa-contract`, `/qa-e2e`
 
@@ -211,6 +211,6 @@ Responses should:
 ---
 
 **Skill type:** Passive
-**Related agents:** `qa-lead`, `qa-engineer` (Migration pack), `unit-test-engineer`, `integration-test-engineer`, `contract-test-engineer`, `performance-engineer`, `e2e-test-engineer`, `test-automation-engineer`, `security-test-engineer` (QA pack)
+**Related agents:** `qa-lead`, `unit-test-engineer`, `integration-test-engineer`, `contract-test-engineer`, `performance-engineer`, `e2e-test-engineer`, `test-automation-engineer`, `security-test-engineer` (QA pack)
 **Applies with:** java, nodejs, python, ci-cd, docker
 **Override:** Project-level `CLAUDE.md` may refine coverage targets and framework choices

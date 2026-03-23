@@ -324,4 +324,4 @@ Quando esta skill está ativa:
 ---
 **Skill type:** Passive
 **Applies with:** kubernetes, observability, security
-**Pairs well with:** service-mesh-engineer (DevOps pack), kubernetes-engineer (DevOps pack), gitops-engineer (DevOps pack), architect (Dev pack)
+**Pairs well with:** kubernetes-engineer (DevOps pack), gitops-engineer (DevOps pack), architect (Dev pack)

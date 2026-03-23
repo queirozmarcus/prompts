@@ -1011,7 +1011,7 @@ Responses should:
 ---
 
 **Skill type:** Passive
-**Related agents:** `backend-dev` (Dev pack), `architect` (Dev pack), `refactoring-engineer` (Dev pack), `backend-engineer` (Migration pack), `dba` (Data pack)
+**Related agents:** `backend-dev` (Dev pack), `architect` (Dev pack), `dba` (Data pack)
 **Applies with:** Global `CLAUDE.md`
 **Pairs well with:** `docker`, `kubernetes`, `ci-cd`, `security`, `observability`
 **Override:** Project-level `CLAUDE.md` may refine behavior

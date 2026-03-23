@@ -17,7 +17,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: green
 context: fork
-version: 10.0.0
+version: 10.2.0
 ---
 
 # CI/CD Engineer — Pipelines, GitOps e Deploy

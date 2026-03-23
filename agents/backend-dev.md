@@ -18,7 +18,7 @@ model: sonnet
 color: green
 context: fork
 memory: user
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Backend Engineer — Implementação Java/Spring Boot

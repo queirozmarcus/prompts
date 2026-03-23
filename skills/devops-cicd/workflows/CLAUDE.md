@@ -414,6 +414,6 @@ Responses should:
 ---
 
 **Skill type:** Passive (Workflow Library)
-**Related agents:** `architect` (Dev pack), `tech-lead` (Migration pack), `domain-analyst` (Migration pack), `cicd-engineer` (DevOps pack), `gitops-engineer` (DevOps pack)
+**Related agents:** `architect` (Dev pack), `cicd-engineer` (DevOps pack), `gitops-engineer` (DevOps pack)
 **Applies with:** git, github-actions, ci-cd, kubernetes, argocd, istio
 **Usage:** Reference specific workflow when starting a task

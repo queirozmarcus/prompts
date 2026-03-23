@@ -19,7 +19,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: pink
 memory: user
-version: 10.0.0
+version: 10.2.0
 ---
 
 # SRE Engineer — Confiabilidade, Incidentes e Resiliência

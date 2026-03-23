@@ -15,7 +15,7 @@ description: |
 tools: Read, Grep, Glob, Bash
 model: opus
 color: blue
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Tech Lead — Coordenação e Decisão de Migração

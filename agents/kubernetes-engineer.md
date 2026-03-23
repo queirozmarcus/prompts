@@ -19,7 +19,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: cyan
 context: fork
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Kubernetes Engineer — Clusters, Workloads e Operação

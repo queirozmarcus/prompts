@@ -17,7 +17,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: orange
 context: fork
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Performance Engineer — Testes de Performance e Otimização

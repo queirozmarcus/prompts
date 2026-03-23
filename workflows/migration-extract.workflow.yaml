@@ -1,0 +1,497 @@
+workflow:
+  name: migration-extract
+  description: >
+    Extracao de contexto do monolito via Strangler Fig Pattern:
+    verificacao de pre-requisitos (Phase 0/1) → analise de dominio →
+    implementacao + migracao de dados (paralelo) → infraestrutura →
+    testes + seguranca (paralelo) → consolidacao pelo Tech Lead.
+  version: "1.0.0"
+  author: marcus
+  tags: [migration, strangler-fig]
+
+  params:
+    - name: context_name
+      required: true
+      description: >
+        Nome do bounded context a ser extraido do monolito (kebab-case).
+        Deve corresponder ao contexto identificado na Phase 0 (Discovery).
+        Exemplos: order-management, payment-processing, inventory-control.
+
+  defaults:
+    retry:
+      max_attempts: 1
+      strategy: immediate
+    on_fail: abort
+    timeout: 600
+
+  steps:
+    # ─── FASE 0: Pre-requisitos ────────────────────────────────────────
+    - id: prerequisites
+      type: check
+      description: >
+        Verifica que os artefatos das fases anteriores (Phase 0 Discovery
+        e Phase 1 Prepare) existem e estao completos antes de iniciar
+        a extracao.
+      check_inline: |
+        Verify that documentation from Phase 0 (Discovery) and Phase 1 (Prepare) exists:
+
+        1. **Phase 0 — Discovery** (docs/migration/discovery/):
+           - [ ] Context map documentado (bounded contexts identificados)
+           - [ ] Dependency graph do monolito mapeado
+           - [ ] Metricas de complexidade por contexto
+           - [ ] Priorizacao de contextos para extracao
+
+        2. **Phase 1 — Prepare** (docs/migration/prepare/):
+           - [ ] Estrategia de Strangler Fig documentada
+           - [ ] Anti-corruption layer (ACL) definida
+           - [ ] Plano de migracao de dados
+           - [ ] Rollback strategy definida
+           - [ ] Feature flags para routing configurados
+
+        3. **Contexto alvo**: "{{context_name}}"
+           - [ ] Bounded context claramente delimitado
+           - [ ] Dependencias upstream/downstream mapeadas
+           - [ ] Contratos existentes documentados (APIs, eventos, tabelas compartilhadas)
+           - [ ] Estimativa de esforco validada
+
+        Se algum item estiver ausente, PARE e reporte ao usuario.
+        Nao prossiga com a extracao sem esses artefatos.
+      on_fail: abort
+
+    # ─── FASE 1: Analise de Dominio ───────────────────────────────────
+    - id: analysis
+      type: agent
+      agent: domain-analyst
+      description: >
+        Analise profunda do bounded context a ser extraido: modelo de dominio,
+        dependencias, contratos, dados compartilhados e estrategia de corte.
+      depends_on: [prerequisites]
+      prompt: |
+        ## Contexto
+        Bounded context para extracao: {{context_name}}
+
+        ## Documentacao de referencia
+        Consulte os artefatos de Phase 0 (Discovery) e Phase 1 (Prepare)
+        em `docs/migration/`.
+
+        ## Tarefa
+        Realize analise completa do bounded context "{{context_name}}" para extracao:
+
+        1. **Modelo de dominio**:
+           - Entidades, aggregates e value objects do contexto
+           - Invariantes de negocio que DEVEM ser preservadas
+           - Domain events publicados e consumidos
+           - Linguagem ubiqua do contexto (glossario)
+
+        2. **Mapeamento de dependencias**:
+           - **Upstream**: quem chama o contexto? (APIs, queries diretas, etc.)
+           - **Downstream**: quem o contexto chama? (outros modulos, servicos externos)
+           - **Tabelas compartilhadas**: identifique JOINs cross-context no monolito
+           - **Transactions distribuidas**: operacoes que envolvem multiplos contextos
+
+        3. **Estrategia de corte** (Strangler Fig):
+           - Defina a "seam" — o ponto exato de corte no monolito
+           - Anti-Corruption Layer (ACL): como traduzir entre modelos antigo e novo
+           - Routing strategy: feature flag ou proxy para direcionar trafego
+           - Plano de coexistencia: monolito e microsservico rodam em paralelo
+
+        4. **Contratos**:
+           - APIs que o novo servico deve expor (backward compatible)
+           - Eventos que deve publicar (para consumidores existentes)
+           - Formato de dados: mapeamento entre schema antigo e novo
+
+        5. **Riscos**:
+           - Dados inconsistentes durante migracao
+           - Performance de queries que cruzavam contextos
+           - Transacoes que envolviam multiplos aggregates
+           - Rollback: como voltar ao monolito se der errado
+
+        ## Output esperado
+        - Documento de analise completo
+        - Diagrama de dependencias (textual)
+        - Estrategia de corte detalhada
+        - Risk assessment com mitigacoes
+      outputs:
+        - artifact: domain_analysis
+          type: text
+          description: "Analise completa do bounded context com estrategia de extracao"
+
+    # ─── FASE 2a: Implementacao do Microsservico ──────────────────────
+    - id: implement
+      type: agent
+      agent: backend-engineer
+      description: >
+        Implementa o novo microsservico extraido do monolito com ACL,
+        contratos backward-compatible e feature flags.
+      depends_on: [analysis]
+      retry:
+        max_attempts: 2
+        strategy: immediate
+      prompt: |
+        ## Contexto
+        Bounded context: {{context_name}}
+
+        ## Analise de dominio
+        {{step.analysis.outputs.domain_analysis}}
+
+        ## Tarefa
+        Implemente o microsservico "{{context_name}}" extraido do monolito:
+
+        1. **Estrutura do servico** (hexagonal):
+           - Domain layer: entidades com regras de negocio (ZERO dependencia de framework)
+           - Application layer: use cases que replicam a logica do monolito
+           - Adapter layer: controllers REST + persistence + messaging
+           - Config layer: Spring configuration
+
+        2. **Anti-Corruption Layer (ACL)**:
+           - Adapter que traduz entre o modelo do monolito e o novo dominio
+           - Garanta que o novo servico NAO herda modelagem ruim do monolito
+           - Mappers explícitos entre DTOs antigos e novos
+
+        3. **Backward compatibility**:
+           - APIs devem manter o contrato existente (mesmos endpoints, mesmos campos)
+           - Novos campos podem ser adicionados (nao breaking)
+           - Eventos publicados mantêm formato existente + novo formato (dual-write temporario)
+
+        4. **Feature flags**:
+           - Toggle para routing: monolito vs microsservico
+           - Toggle para dual-write: dados escritos em ambos durante migracao
+           - Toggle para leitura: escolher fonte de dados (monolito ou servico)
+
+        5. **Strangler proxy**:
+           - Interceptor/proxy que roteia requests baseado no feature flag
+           - Logging de todas as requests roteadas (para comparacao)
+           - Fallback para monolito se servico falhar
+
+        6. **Qualidade**:
+           - Codigo compilavel e executavel
+           - Logging estruturado em pontos criticos
+           - Error handling com Problem Details (RFC 9457)
+           - Metricas de comparacao: monolito vs servico
+
+        ## Output esperado
+        - Microsservico completo e funcional
+        - ACL implementada
+        - Feature flags configurados
+        - Strangler proxy
+      outputs:
+        - path: "src/main/java/**/*.java"
+          description: "Codigo do microsservico"
+        - artifact: implementation_notes
+          type: text
+          description: "Notas de implementacao, decisoes e desvios do plano"
+
+    # ─── FASE 2b: Migracao de Dados ───────────────────────────────────
+    - id: data_migration
+      type: agent
+      agent: data-engineer
+      description: >
+        Define e implementa a estrategia de migracao de dados do schema
+        do monolito para o novo microsservico.
+      depends_on: [analysis]
+      prompt: |
+        ## Contexto
+        Bounded context: {{context_name}}
+
+        ## Analise de dominio
+        {{step.analysis.outputs.domain_analysis}}
+
+        ## Tarefa
+        Implemente a migracao de dados do monolito para o novo servico:
+
+        1. **Schema do novo servico**:
+           - Flyway migration `V1__create_{{context_name}}_schema.sql`
+           - Schema normalizado conforme novo modelo de dominio
+           - Indices otimizados para queries do microsservico
+           - SEM tabelas compartilhadas com o monolito
+
+        2. **Mapeamento de dados**:
+           - Tabela de/para: coluna do monolito → coluna do novo schema
+           - Transformacoes necessarias (tipo de dados, formato, enums)
+           - Dados que nao migram (obsoletos, duplicados)
+           - Dados que precisam de enriquecimento (defaults, calculos)
+
+        3. **Estrategia de migracao**:
+           - **Fase 1 — Snapshot**: carga inicial dos dados existentes
+             - Script SQL ou ETL para copia bulk
+             - Validacao de contagem e checksum
+           - **Fase 2 — Dual-write**: novos dados escritos em ambos os bancos
+             - CDC (Change Data Capture) ou application-level dual-write
+             - Conflict resolution strategy
+           - **Fase 3 — Cutover**: novo servico passa a ser fonte de verdade
+             - Verificacao final de consistencia
+             - Switch de feature flag
+           - **Fase 4 — Cleanup**: remove dual-write e dados do monolito
+
+        4. **Rollback de dados**:
+           - Como reverter a migracao sem perda de dados
+           - Scripts de rollback testados
+           - Point-in-time recovery strategy
+
+        5. **Validacao**:
+           - Script de comparacao entre dados do monolito e novo servico
+           - Metricas: contagem de registros, checksums, data freshness
+           - Alertas para inconsistencias
+
+        ## Output esperado
+        - Flyway migrations
+        - Scripts de migracao de dados
+        - Scripts de validacao/comparacao
+        - Plano de cutover detalhado
+      outputs:
+        - path: "src/main/resources/db/migration/V*__*.sql"
+          description: "Flyway migrations do novo schema"
+        - artifact: data_migration_plan
+          type: text
+          description: "Plano de migracao de dados com fases e rollback"
+
+    # ─── FASE 3: Infraestrutura ────────────────────────────────────────
+    - id: infra
+      type: agent
+      agent: platform-engineer
+      description: >
+        Provisiona infraestrutura dedicada para o microsservico extraido:
+        database, Helm chart, service mesh config e routing.
+      depends_on: [implement]
+      prompt: |
+        ## Contexto
+        Bounded context: {{context_name}}
+
+        ## Implementacao
+        {{step.implement.outputs.implementation_notes}}
+
+        ## Tarefa
+        Provisione infraestrutura para o microsservico "{{context_name}}":
+
+        1. **Database dedicado**:
+           - PostgreSQL dedicado para o servico (nao compartilhar com monolito)
+           - Schema conforme data_migration step
+           - Backup automatico
+           - Connection pooling (PgBouncer se necessario)
+
+        2. **Kubernetes manifests**:
+           - Helm chart com probes, resources, HPA, PDB
+           - Namespace dedicado
+           - Network Policies: permitir comunicacao com monolito durante migracao
+           - ConfigMap/Secrets para feature flags
+
+        3. **Service mesh / Routing**:
+           - Strangler proxy config: routing rules baseadas em feature flags
+           - Traffic splitting: % para monolito vs microsservico (canary)
+           - Circuit breaker: fallback para monolito se servico degradar
+           - Retry/timeout policies
+
+        4. **Messaging** (se o contexto usa eventos):
+           - Kafka topics: `{{context_name}}.{entity}.{action}.v1`
+           - Consumer groups isolados
+           - Dead letter queue
+
+        5. **Observability**:
+           - Dashboard de comparacao: monolito vs microsservico
+           - Metricas de routing (% trafego para cada destino)
+           - Alertas para inconsistencia de dados
+
+        ## Output esperado
+        - Helm chart
+        - Routing/proxy config
+        - Messaging config (se aplicavel)
+        - Dashboard de migracao
+      outputs:
+        - path: "helm/{{context_name}}/"
+          type: directory
+          optional: true
+          description: "Helm chart do microsservico"
+        - artifact: infra_setup
+          type: text
+          description: "Configuracao de infra com routing e messaging"
+
+    # ─── FASE 4a: Testes ───────────────────────────────────────────────
+    - id: tests
+      type: agent
+      agent: qa-engineer
+      description: >
+        Gera suite de testes focada em garantir paridade funcional
+        entre monolito e microsservico, alem de contract tests.
+      depends_on: [implement, data_migration]
+      prompt: |
+        ## Contexto
+        Bounded context: {{context_name}}
+
+        ## Implementacao e migracao
+        - Implementacao: {{step.implement.outputs.implementation_notes}}
+        - Migracao de dados: {{step.data_migration.outputs.data_migration_plan}}
+
+        ## Tarefa
+        Gere testes completos para validar a extracao:
+
+        1. **Testes de paridade funcional**:
+           - Para cada endpoint: mesma request ao monolito e ao microsservico
+             deve produzir mesma response (exceto campos de infra como timestamps)
+           - Comparacao automatizada com diff de responses
+           - Cobrir happy paths E edge cases
+
+        2. **Contract tests** (Pact ou Spring Cloud Contract):
+           - Contratos para cada API exposta pelo microsservico
+           - Contratos para cada evento publicado
+           - Consumer-driven: consumidores existentes validam contratos
+           - Falha em contract test BLOQUEIA deploy
+
+        3. **Data migration tests**:
+           - Validacao de contagem de registros (monolito vs servico)
+           - Validacao de checksums em campos criticos
+           - Validacao de referential integrity no novo schema
+           - Teste de dual-write: dados escritos em ambos sao consistentes
+
+        4. **Performance comparison**:
+           - Latencia: monolito vs microsservico (mesmas queries)
+           - Throughput: capacidade do novo servico vs monolito
+           - Regressao de performance bloqueia cutover
+
+        5. **Chaos tests**:
+           - Microsservico indisponivel: monolito assume via fallback?
+           - Database do servico indisponivel: circuit breaker funciona?
+           - Rede lenta entre servicos: timeout e retry corretos?
+
+        ## Output esperado
+        - Testes de paridade funcional
+        - Contract tests (Pact/SCC)
+        - Data validation scripts
+        - Performance benchmarks
+        - Chaos test scenarios
+      outputs:
+        - artifact: test_results
+          type: text
+          description: "Resultados de testes com metricas de paridade e performance"
+      checks:
+        - "Contract tests defined"
+
+    # ─── FASE 4b: Security Review ──────────────────────────────────────
+    - id: security_review
+      type: agent
+      agent: security-engineer
+      description: >
+        Audita seguranca do microsservico extraido, ACL, routing
+        e migracao de dados.
+      depends_on: [implement, infra]
+      prompt: |
+        ## Contexto
+        Bounded context: {{context_name}}
+
+        ## Artefatos para revisao
+        - Implementacao: {{step.implement.outputs.implementation_notes}}
+        - Infra: {{step.infra.outputs.infra_setup}}
+
+        ## Tarefa
+        Realize security review completo da extracao:
+
+        1. **Autenticacao e autorizacao**:
+           - O microsservico valida tokens/sessoes da mesma forma que o monolito?
+           - Authorization checks preservados em todos os endpoints?
+           - Service-to-service auth: mTLS ou JWT entre monolito e servico?
+
+        2. **Anti-Corruption Layer**:
+           - ACL nao expoe dados internos do monolito
+           - Input validation em todos os pontos de entrada
+           - Sem SQL injection, XSS ou IDOR no novo codigo
+
+        3. **Migracao de dados**:
+           - Dados sensiveis (PII) criptografados no novo banco?
+           - Scripts de migracao nao logam dados sensiveis
+           - Acesso ao banco de dados restrito (least privilege)
+           - Cleanup de dados no monolito seguro (sem perda)
+
+        4. **Routing/Proxy**:
+           - Feature flags nao podem ser manipulados por usuarios
+           - Proxy nao expoe headers internos
+           - TLS em toda comunicacao entre servicos
+
+        5. **Secrets**:
+           - Credenciais de banco via secrets manager (nao env vars plaintext)
+           - API keys rotacionadas apos migracao
+           - Sem secrets hardcoded no codigo ou configs
+
+        ## Output esperado
+        - Findings categorizados (CRITICAL/HIGH/MEDIUM/LOW)
+        - Correcoes necessarias
+        - Checklist de seguranca para cutover
+      outputs:
+        - artifact: security_findings
+          type: text
+          description: "Security findings e checklist de cutover"
+
+    # ─── FASE 5: Consolidacao ──────────────────────────────────────────
+    - id: consolidate
+      type: agent
+      agent: tech-lead
+      description: >
+        Consolida toda a extracao, valida prontidao para cutover,
+        define criterios de go/no-go e plano de rollback.
+      depends_on: [tests, security_review, infra, data_migration]
+      on_fail: warn
+      prompt: |
+        ## Contexto
+        Bounded context: {{context_name}}
+
+        ## Artefatos de todos os steps
+        - Analise: {{step.analysis.outputs.domain_analysis}}
+        - Implementacao: {{step.implement.outputs.implementation_notes}}
+        - Migracao de dados: {{step.data_migration.outputs.data_migration_plan}}
+        - Infra: {{step.infra.outputs.infra_setup}}
+        - Testes: {{step.tests.outputs.test_results}}
+        - Seguranca: {{step.security_review.outputs.security_findings}}
+
+        ## Tarefa
+        Consolide a extracao e avalie prontidao para cutover:
+
+        1. **Validacao de completude**:
+           - Todos os endpoints do contexto estao implementados no microsservico?
+           - Todos os eventos sao publicados/consumidos corretamente?
+           - Migracao de dados testada e validada?
+           - Contract tests definidos e passando?
+           - Security findings CRITICAL/HIGH resolvidos?
+
+        2. **Criterios de go/no-go para cutover**:
+           - [ ] Paridade funcional: 100% dos endpoints retornam mesma response
+           - [ ] Performance: latencia do servico <= 110% do monolito
+           - [ ] Data consistency: zero discrepancias apos dual-write de 7 dias
+           - [ ] Contract tests: todos passam
+           - [ ] Security: zero findings CRITICAL, zero HIGH nao-mitigados
+           - [ ] Rollback testado: conseguimos voltar ao monolito em < 5min
+           - [ ] Monitoring: dashboard e alertas validados
+           - [ ] Stakeholder approval: PO e EM aprovaram
+
+        3. **Plano de cutover** (passo a passo):
+           - T-7d: iniciar dual-write
+           - T-3d: validar consistencia de dados
+           - T-1d: rehearsal de cutover em staging
+           - T-0: cutover em prod
+             1. Shift 10% trafego para servico (canary)
+             2. Monitorar metricas por 30min
+             3. Shift 50% trafego
+             4. Monitorar metricas por 1h
+             5. Shift 100% trafego
+             6. Monitorar metricas por 24h
+             7. Desabilitar dual-write
+           - T+7d: cleanup (remover codigo do monolito, feature flags)
+
+        4. **Plano de rollback**:
+           - Criterios de trigger: quando reverter automaticamente
+           - Steps de rollback: feature flag → monolito, em < 5min
+           - Data rollback: como sincronizar dados escritos apenas no servico
+
+        5. **Riscos remanescentes**: liste riscos nao completamente mitigados
+           com probabilidade, impacto e acao.
+
+        6. **Proximas extracoes**: recomendacoes para o proximo contexto
+           a extrair (lessons learned).
+
+        ## Output esperado
+        - Avaliacao de prontidao (GO / NO-GO com justificativa)
+        - Plano de cutover detalhado
+        - Plano de rollback
+        - Risk register atualizado
+        - Lessons learned
+      outputs:
+        - artifact: consolidation_report
+          type: text
+          description: "Relatorio de consolidacao com go/no-go, cutover plan e lessons learned"

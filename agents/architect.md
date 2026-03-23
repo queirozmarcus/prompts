@@ -17,7 +17,7 @@ tools: Read, Grep, Glob, Bash
 model: opus
 color: blue
 memory: user
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Architect — Design e Decisões Arquiteturais

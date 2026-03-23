@@ -14,7 +14,7 @@ description: |
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: purple
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Contract Test Engineer — Contratos entre Serviços

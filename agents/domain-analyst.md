@@ -14,7 +14,7 @@ description: |
 tools: Read, Grep, Glob, Bash
 model: haiku
 color: purple
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Domain Analyst — Modelagem e Decomposição de Domínio

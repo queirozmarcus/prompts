@@ -1,0 +1,688 @@
+workflow:
+  name: service-bootstrap
+  description: >
+    Bootstrap completo de um novo microsservico: arquitetura, codigo,
+    API, schema, testes, infra (Docker + Helm + CI/CD + Observability),
+    seguranca e documentacao. Orquestra Dev, QA e DevOps packs.
+  version: "1.0.0"
+  author: marcus
+  tags: [dev, qa, devops, bootstrap]
+
+  params:
+    - name: service_name
+      required: true
+      description: >
+        Nome do novo servico em kebab-case (ex: order-service, payment-gateway).
+        Usado para nomear packages, Helm chart, pipeline, e todos os artefatos.
+    - name: cloud
+      required: false
+      default: aws
+      description: >
+        Cloud provider alvo (aws, gcp, azure). Define templates de IaC,
+        registry de container e configuracoes especificas do provider.
+
+  defaults:
+    retry:
+      max_attempts: 1
+      strategy: immediate
+    on_fail: abort
+    timeout: 300
+
+  steps:
+    # ─── FASE 1: Arquitetura ───────────────────────────────────────────
+    - id: architecture
+      type: agent
+      agent: architect
+      description: >
+        Define a arquitetura completa do novo servico: bounded context,
+        modelo de dominio, integracao, stack tecnologica e ADR.
+      prompt: |
+        ## Contexto
+        Novo servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Tarefa
+        Defina a arquitetura completa para o novo microsservico:
+
+        1. **Bounded Context**: defina o dominio, responsabilidades, e limites
+           do servico. O que esta DENTRO e FORA do escopo.
+
+        2. **Stack tecnologica**:
+           - Java 21+ com Spring Boot 3.2+
+           - Arquitetura hexagonal (domain, application, adapter.in, adapter.out, config)
+           - Build: Maven com wrapper
+           - Banco: PostgreSQL (padrao) ou justifique alternativa
+           - Messaging: Kafka (se necessario)
+
+        3. **Modelo de dominio**:
+           - Entidades principais, aggregates, value objects
+           - Domain events publicados e consumidos
+           - Regras de negocio criticas
+
+        4. **Integracao**:
+           - APIs que o servico expoe (sync)
+           - Eventos que publica/consome (async)
+           - Dependencias de outros servicos
+
+        5. **Estrutura de packages**:
+           ```
+           com.{org}.{{service_name}}/
+           ├── domain/          # Entidades, VOs, ports, domain events
+           ├── application/     # Use cases, DTOs
+           ├── adapter/
+           │   ├── in/web/      # Controllers REST
+           │   └── out/
+           │       ├── persistence/  # JPA repositories
+           │       └── messaging/    # Kafka producers/consumers
+           └── config/          # Spring configuration
+           ```
+
+        6. **NFRs**: latencia alvo, throughput, SLO, data retention.
+
+        7. **ADR**: gere ADR para decisoes arquiteturais do servico.
+
+        ## Output esperado
+        - Documento de arquitetura completo
+        - ADR em docs/architecture/adr/
+        - Diagrama de contexto (textual)
+      outputs:
+        - artifact: architecture_document
+          type: text
+          description: "Documento de arquitetura do servico"
+        - path: "docs/architecture/adr/ADR-*.md"
+          optional: true
+          description: "Architecture Decision Records"
+
+    # ─── FASE 2: Estrutura de Codigo ───────────────────────────────────
+    - id: code_structure
+      type: agent
+      agent: backend-dev
+      description: >
+        Gera a estrutura base do projeto: pom.xml, Application class,
+        packages hexagonais, configuracoes Spring e application.yml.
+      depends_on: [architecture]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Arquitetura definida
+        {{step.architecture.outputs.architecture_document}}
+
+        ## Tarefa
+        Gere a estrutura completa do projeto Spring Boot:
+
+        1. **pom.xml**: Maven com:
+           - Spring Boot 3.2+ parent
+           - Java 21
+           - Dependencias: Spring Web, Spring Data JPA, Flyway, PostgreSQL driver,
+             Actuator, OpenAPI/Springdoc, Testcontainers, JUnit 5, AssertJ, Mockito
+           - Maven wrapper (mvnw)
+           - Plugins: spring-boot-maven-plugin, maven-surefire-plugin
+
+        2. **Application class**: `{{service_name}}Application.java` com @SpringBootApplication
+
+        3. **Package structure** (hexagonal):
+           - `domain/model/` — entidades de dominio (sem annotations JPA)
+           - `domain/port/in/` — use case interfaces
+           - `domain/port/out/` — repository port interfaces
+           - `domain/exception/` — excecoes de dominio
+           - `application/service/` — implementacoes de use cases
+           - `adapter/in/web/` — controllers REST
+           - `adapter/in/web/dto/` — request/response DTOs
+           - `adapter/out/persistence/` — JPA entities, repositories, mappers
+           - `config/` — Spring configuration classes
+
+        4. **application.yml**: profiles (default, dev, test, prod) com:
+           - Datasource config (PostgreSQL)
+           - Actuator endpoints (health, info, prometheus)
+           - Logging config (structured JSON em prod)
+           - Server port
+
+        5. **.gitattributes**: LF enforced
+
+        6. **Dockerfile** (multi-stage):
+           - Build: eclipse-temurin:21-jdk-alpine
+           - Runtime: eclipse-temurin:21-jre-alpine
+           - Non-root user, health check
+
+        ## Output esperado
+        - Projeto compilavel com `./mvnw clean compile`
+        - Todas as camadas hexagonais com package-info.java
+      outputs:
+        - path: "pom.xml"
+          description: "Maven POM"
+        - path: "src/main/java/**/*.java"
+          description: "Estrutura de codigo Java"
+        - path: "Dockerfile"
+          description: "Dockerfile multi-stage"
+      checks:
+        - "Code compiles without errors"
+
+    # ─── FASE 3: API Design ───────────────────────────────────────────
+    - id: api_design
+      type: agent
+      agent: api-designer
+      description: >
+        Define todos os endpoints REST, DTOs, error catalog e OpenAPI spec
+        para o novo servico.
+      depends_on: [architecture]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+
+        ## Arquitetura definida
+        {{step.architecture.outputs.architecture_document}}
+
+        ## Tarefa
+        Defina o contrato completo da API REST do servico:
+
+        1. **Endpoints CRUD** para cada entidade principal:
+           - POST `/api/v1/{resource}` — criar
+           - GET `/api/v1/{resource}/{id}` — buscar por ID
+           - GET `/api/v1/{resource}?page=&size=&sort=` — listar com paginacao
+           - PUT `/api/v1/{resource}/{id}` — atualizar
+           - DELETE `/api/v1/{resource}/{id}` — remover (soft delete se aplicavel)
+
+        2. **Endpoints de dominio**: operacoes alem do CRUD conforme regras de negocio.
+
+        3. **DTOs**: `{Entity}Request`, `{Entity}Response` como Java records.
+           Inclua Bean Validation annotations (@NotBlank, @Size, @Email, etc.).
+
+        4. **Error catalog**: Problem Details (RFC 9457) com codigos estaveis.
+
+        5. **OpenAPI spec**: YAML completo para todos os endpoints.
+
+        6. **Health/Info**: Actuator endpoints padrao.
+
+        ## Output esperado
+        - Especificacao completa dos endpoints
+        - DTOs com validacoes
+        - Error catalog
+        - OpenAPI YAML
+      outputs:
+        - artifact: api_specification
+          type: text
+          description: "Especificacao completa da API"
+
+    # ─── FASE 4: Schema de Banco ──────────────────────────────────────
+    - id: schema
+      type: agent
+      agent: dba
+      description: >
+        Define o schema inicial do banco de dados com Flyway migrations,
+        indices e constraints.
+      depends_on: [architecture]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+
+        ## Arquitetura definida
+        {{step.architecture.outputs.architecture_document}}
+
+        ## Tarefa
+        Crie o schema inicial do banco de dados:
+
+        1. **Flyway migration** `V1__create_initial_schema.sql`:
+           - Tabelas para todas as entidades do dominio
+           - Primary keys (UUID ou BIGSERIAL conforme arquitetura)
+           - Foreign keys com nomes explicitos
+           - Indices para colunas usadas em WHERE/JOIN
+           - Constraints CHECK/UNIQUE onde necessario
+           - Colunas de auditoria: created_at, updated_at (TIMESTAMP WITH TIME ZONE)
+           - Comentarios nas tabelas e colunas criticas
+
+        2. **Naming conventions**:
+           - Tabelas: snake_case, plural (ex: `customers`, `order_items`)
+           - Colunas: snake_case
+           - Indices: `idx_{table}_{column}`
+           - Constraints: `fk_{table}_{ref_table}`, `uq_{table}_{column}`
+
+        3. **Performance**: justifique escolhas de tipo de dados e indexacao.
+
+        ## Output esperado
+        - Flyway migration V1 com schema completo
+        - Analise de performance das queries esperadas
+      outputs:
+        - path: "src/main/resources/db/migration/V1__*.sql"
+          description: "Migration inicial Flyway"
+
+    # ─── FASE 5: Testes Unitarios ──────────────────────────────────────
+    - id: unit_tests
+      type: agent
+      agent: unit-test-engineer
+      description: >
+        Gera testes unitarios para domain e application layers.
+      depends_on: [code_structure]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+
+        ## Tarefa
+        Gere testes unitarios completos para o servico:
+
+        1. **Domain tests**: teste todas as regras de negocio das entidades.
+           - Criacao valida e invalida
+           - Transicoes de estado
+           - Validacoes de value objects
+           - Domain events emitidos
+
+        2. **Application tests**: teste todos os use cases.
+           - Happy path
+           - Validacao de input
+           - Entidade nao encontrada
+           - Regras de negocio violadas
+           - Mock apenas nos ports out (repository, messaging)
+
+        3. **Convencoes**:
+           - JUnit 5 + AssertJ + Mockito
+           - Naming: `shouldDoSomething_whenCondition()`
+           - Pattern: Given-When-Then
+           - Um assert logico por teste
+           - `{Class}Test` para unit tests
+
+        ## Output esperado
+        - Testes para cada classe de dominio e use case
+        - 80%+ cobertura das classes novas
+        - Todos os testes passam
+      outputs:
+        - path: "src/test/java/**/*Test.java"
+          description: "Testes unitarios"
+      checks:
+        - "Tests compile and pass"
+
+    # ─── FASE 6: Testes de Integracao ──────────────────────────────────
+    - id: integration_tests
+      type: agent
+      agent: integration-test-engineer
+      description: >
+        Gera testes de integracao com Testcontainers para repository e controllers.
+      depends_on: [code_structure, schema]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+
+        ## Tarefa
+        Gere testes de integracao com Testcontainers:
+
+        1. **Repository tests** (Testcontainers + PostgreSQL):
+           - CRUD completo
+           - Queries customizadas
+           - Paginacao e sorting
+           - Constraints e validacoes de banco
+
+        2. **Controller tests** (MockMvc ou WebTestClient):
+           - Todos os endpoints da API
+           - Validacao de request (Bean Validation)
+           - Error responses (Problem Details)
+           - Content-Type e status codes corretos
+
+        3. **End-to-end tests**:
+           - Fluxo completo: request → controller → service → repository → response
+           - Com banco real via Testcontainers
+
+        4. **Convencoes**:
+           - NUNCA usar H2 — sempre Testcontainers
+           - `{Class}IntegrationTest` para integration tests
+           - @SpringBootTest para testes E2E
+           - Dados de teste isolados (cleanup entre testes)
+
+        ## Output esperado
+        - Testes de integracao para repositories e controllers
+        - Testcontainers configurado para PostgreSQL
+        - Todos os testes passam
+      outputs:
+        - path: "src/test/java/**/*IntegrationTest.java"
+          description: "Testes de integracao"
+
+    # ─── FASE 7: Estrategia QA ─────────────────────────────────────────
+    - id: qa_strategy
+      type: agent
+      agent: qa-lead
+      description: >
+        Define estrategia de qualidade completa incluindo piramide de testes,
+        quality gates e metricas.
+      depends_on: [unit_tests, integration_tests]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+
+        ## Tarefa
+        Defina a estrategia de qualidade para o servico:
+
+        1. **Piramide de testes**: avalie a cobertura atual e identifique gaps.
+           - Unit tests existentes: adequados?
+           - Integration tests existentes: adequados?
+           - Contract tests necessarios? (se integra com outros servicos)
+           - E2E tests necessarios?
+           - Performance tests necessarios?
+
+        2. **Quality gates** para CI/CD:
+           - Cobertura minima: 80% overall, 100% security paths
+           - Mutation score: 80%+ para domain layer
+           - Zero findings CRITICAL/HIGH no code review
+           - Todos os testes passam
+
+        3. **Metricas de qualidade**: defina KPIs para o servico.
+
+        4. **Gaps e recomendacoes**: liste testes adicionais necessarios.
+
+        ## Output esperado
+        - Estrategia de QA documentada
+        - Quality gates definidos
+        - Lista de gaps e recomendacoes
+      outputs:
+        - artifact: qa_strategy
+          type: text
+          description: "Estrategia de qualidade e quality gates"
+
+    # ─── FASE 8: Infraestrutura (paralela) ─────────────────────────────
+    - id: infra
+      type: parallel
+      description: >
+        Provisiona toda a infraestrutura do servico em paralelo:
+        Dockerfile, Helm chart, CI/CD pipeline e observability stack.
+      depends_on: [code_structure]
+      on_fail: abort
+      steps:
+        - id: dockerfile
+          type: agent
+          agent: devops-engineer
+          description: "Otimiza Dockerfile com multi-stage build, non-root user e health check."
+          prompt: |
+            ## Contexto
+            Servico: {{service_name}}
+            Cloud: {{cloud}}
+
+            ## Tarefa
+            Revise e otimize o Dockerfile gerado no step code_structure:
+
+            1. **Multi-stage build**:
+               - Stage 1 (build): eclipse-temurin:21-jdk-alpine + Maven
+               - Stage 2 (runtime): eclipse-temurin:21-jre-alpine
+               - Copiar apenas o JAR para runtime stage
+
+            2. **Seguranca**:
+               - Non-root user (appuser:appgroup)
+               - Sem secrets no image
+               - Read-only filesystem onde possivel
+
+            3. **Performance**:
+               - Layer caching otimizado (COPY pom.xml primeiro, depois src/)
+               - .dockerignore completo
+               - Image size minimo
+
+            4. **Health check**: HEALTHCHECK com curl para /actuator/health
+
+            5. **docker-compose.yml** para desenvolvimento local:
+               - App + PostgreSQL + (Kafka se necessario)
+               - Volumes para dados persistentes
+               - Network isolada
+
+            ## Output esperado
+            - Dockerfile otimizado
+            - .dockerignore
+            - docker-compose.yml para dev
+          outputs:
+            - path: "Dockerfile"
+              description: "Dockerfile otimizado"
+            - path: "docker-compose.yml"
+              description: "Docker Compose para dev"
+
+        - id: helm
+          type: agent
+          agent: kubernetes-engineer
+          description: "Cria Helm chart completo com probes, resources, HPA e PDB."
+          prompt: |
+            ## Contexto
+            Servico: {{service_name}}
+            Cloud: {{cloud}}
+
+            ## Tarefa
+            Crie Helm chart completo em `helm/{{service_name}}/`:
+
+            1. **Chart.yaml**: metadata do chart
+            2. **values.yaml**: valores default configuráveis
+            3. **Templates**:
+               - Deployment com:
+                 - Liveness probe: /actuator/health/liveness
+                 - Readiness probe: /actuator/health/readiness
+                 - Startup probe: /actuator/health (failureThreshold alto)
+                 - Resources requests/limits baseados em profiling
+                 - Graceful shutdown (preStop + terminationGracePeriodSeconds < 30s)
+               - Service (ClusterIP)
+               - Ingress (com annotations para cloud provider)
+               - HPA (autoscaling por CPU/memoria)
+               - PDB (minAvailable: 1)
+               - ConfigMap para application.yml
+               - Secret para credenciais (external-secrets se possivel)
+               - ServiceAccount
+
+            4. **values-{env}.yaml**: overrides para dev, staging, prod
+
+            ## Output esperado
+            - Helm chart completo e funcional
+            - `helm template` sem erros
+          outputs:
+            - path: "helm/{{service_name}}/Chart.yaml"
+              description: "Helm Chart"
+            - path: "helm/{{service_name}}/templates/"
+              type: directory
+              description: "Helm templates"
+
+        - id: pipeline
+          type: agent
+          agent: cicd-engineer
+          description: "Cria pipeline CI/CD com build, test, security scan e deploy."
+          prompt: |
+            ## Contexto
+            Servico: {{service_name}}
+            Cloud: {{cloud}}
+
+            ## Tarefa
+            Crie pipeline CI/CD completo (GitHub Actions):
+
+            1. **CI pipeline** (`.github/workflows/ci.yml`):
+               - Trigger: push + PR para main
+               - Steps: checkout, setup-java-21, cache-maven, compile, test,
+                 coverage-report, security-scan (trivy), build-docker, push-to-registry
+               - Quality gates: tests pass, coverage >= 80%, zero critical vulnerabilities
+
+            2. **CD pipeline** (`.github/workflows/cd.yml`):
+               - Trigger: tag push (v*)
+               - Steps: build, push-image, helm-upgrade staging, smoke-tests,
+                 approval-gate, helm-upgrade prod
+               - Rollback automatico se smoke tests falham
+
+            3. **PR checks** (`.github/workflows/pr-checks.yml`):
+               - Lint, format check, test, coverage diff
+
+            ## Output esperado
+            - Pipelines GitHub Actions completos
+            - Configuracao de secrets necessarios documentada
+          outputs:
+            - path: ".github/workflows/*.yml"
+              description: "GitHub Actions workflows"
+
+        - id: observability
+          type: agent
+          agent: observability-engineer
+          description: "Configura stack de observability: metricas, logs, traces e alertas."
+          prompt: |
+            ## Contexto
+            Servico: {{service_name}}
+            Cloud: {{cloud}}
+
+            ## Tarefa
+            Configure observability completa para o servico:
+
+            1. **Metricas** (Prometheus/Micrometer):
+               - Spring Actuator com endpoint /actuator/prometheus
+               - Metricas custom de negocio (counters, gauges, histograms)
+               - ServiceMonitor para Prometheus Operator
+               - Grafana dashboard JSON
+
+            2. **Logs** (structured JSON):
+               - Logback config com JSON encoder para prod
+               - Correlation ID (trace-id) em todos os logs
+               - Log levels configuráveis por ambiente
+
+            3. **Traces** (OpenTelemetry):
+               - Dependencia opentelemetry-javaagent
+               - Configuracao de exporters
+               - Propagacao de contexto (W3C TraceContext)
+
+            4. **Alertas**:
+               - PrometheusRule para alertas criticos:
+                 - Error rate > 5% por 5min
+                 - Latency p99 > SLO por 5min
+                 - Pod restarts > 3 em 15min
+               - Runbook links nos alertas
+
+            ## Output esperado
+            - Configuracao de metricas, logs e traces
+            - Grafana dashboard
+            - Alerting rules
+          outputs:
+            - path: "src/main/resources/logback-spring.xml"
+              optional: true
+              description: "Configuracao de logging"
+            - artifact: observability_config
+              type: text
+              description: "Configuracao completa de observability"
+
+    # ─── FASE 9: Seguranca ─────────────────────────────────────────────
+    - id: security
+      type: agent
+      agent: security-ops
+      description: >
+        Audita seguranca de toda a infraestrutura gerada e aplica hardening.
+      depends_on: [infra]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Tarefa
+        Audite e aplique hardening de seguranca em todos os artefatos de infra:
+
+        1. **Dockerfile**:
+           - Non-root user confirmado
+           - Sem packages desnecessarios
+           - Image base sem CVEs criticas
+           - Sem secrets no build
+
+        2. **Helm chart**:
+           - SecurityContext (runAsNonRoot, readOnlyRootFilesystem, drop ALL capabilities)
+           - NetworkPolicy (ingress/egress restritivo)
+           - ServiceAccount sem automount de token
+           - Secrets via external-secrets operator (nao plaintext)
+
+        3. **Pipeline**:
+           - Trivy/Snyk scan de imagens
+           - SAST (static analysis)
+           - Secrets nao expostos em logs
+           - Pinned action versions (SHA)
+
+        4. **Aplicacao**:
+           - CORS configurado
+           - Rate limiting
+           - Security headers (HSTS, X-Content-Type-Options, etc.)
+           - Dependency check (OWASP)
+
+        ## Output esperado
+        - Findings de seguranca categorizados (CRITICAL/HIGH/MEDIUM/LOW)
+        - Correcoes aplicadas
+        - Checklist de compliance
+      outputs:
+        - artifact: security_findings
+          type: text
+          description: "Findings de seguranca e correcoes aplicadas"
+      checks:
+        - probes-defined
+        - resource-limits
+
+    # ─── FASE 10: Documentacao Final ───────────────────────────────────
+    - id: docs
+      type: agent
+      agent: architect
+      description: >
+        Consolida toda a documentacao do servico: README, API docs,
+        runbook operacional e guia de desenvolvimento.
+      depends_on: [infra, security, qa_strategy]
+      prompt: |
+        ## Contexto
+        Servico: {{service_name}}
+        Cloud: {{cloud}}
+
+        ## Artefatos anteriores
+        - Arquitetura: {{step.architecture.outputs.architecture_document}}
+        - QA: {{step.qa_strategy.outputs.qa_strategy}}
+        - Seguranca: {{step.security.outputs.security_findings}}
+
+        ## Tarefa
+        Gere documentacao completa do servico:
+
+        1. **README.md**: visao geral, quick start, pre-requisitos, como rodar
+           local (docker compose), como testar, como deployar.
+
+        2. **docs/api/**: documentacao da API com exemplos curl.
+
+        3. **docs/architecture/**: ADRs + diagrama de contexto + modelo de dominio.
+
+        4. **docs/devops/runbooks/**: runbook operacional com:
+           - Como escalar
+           - Como fazer rollback
+           - Como investigar incidentes
+           - Metricas e alertas chave
+
+        5. **.env.example**: todas as env vars documentadas com exemplos.
+
+        ## Output esperado
+        - README.md completo
+        - Documentacao tecnica e operacional
+        - .env.example
+      outputs:
+        - path: "README.md"
+          description: "README do servico"
+        - path: "docs/"
+          type: directory
+          description: "Documentacao completa"
+
+    # ─── FASE 11: Relatorio Final ─────────────────────────────────────
+    - id: summary
+      type: report
+      description: >
+        Relatorio consolidado do bootstrap com todos os artefatos e proximos passos.
+      depends_on: [docs]
+      template: |
+        ## Bootstrap Concluido: {{service_name}}
+
+        **Cloud:** {{cloud}}
+        **Steps:** {{workflow.steps_completed}} / {{workflow.steps_total}}
+
+        ### Artefatos Gerados
+        | Categoria | Artefatos |
+        |-----------|-----------|
+        | Arquitetura | ADR, diagrama de contexto, modelo de dominio |
+        | Codigo | Projeto Maven, hexagonal, Dockerfile |
+        | API | Endpoints REST, DTOs, OpenAPI spec |
+        | Banco | Schema Flyway, indices, constraints |
+        | Testes | Unit tests, integration tests (Testcontainers) |
+        | QA | Estrategia, quality gates, metricas |
+        | Infra | Helm chart, CI/CD pipeline, observability |
+        | Seguranca | Audit findings, hardening aplicado |
+        | Docs | README, API docs, runbook |
+
+        ### Quality Gates
+        {{step.qa_strategy.outputs.qa_strategy}}
+
+        ### Security Findings
+        {{step.security.outputs.security_findings}}
+
+        ### Proximos Passos
+        1. Revisar artefatos gerados: `/dev-review src/`
+        2. Executar testes: `./mvnw test`
+        3. Build Docker: `docker compose up -d`
+        4. Deploy staging: `/devops-pipeline {{service_name}}`
+        5. Smoke tests: `/qa-e2e "smoke {{service_name}}"`

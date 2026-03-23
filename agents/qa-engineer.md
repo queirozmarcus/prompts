@@ -17,7 +17,7 @@ description: |
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: orange
-version: 10.0.0
+version: 10.2.0
 ---
 
 # QA Engineer — Qualidade e Validação Contínua

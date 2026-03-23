@@ -3,7 +3,7 @@
 > **ANEXO I** — Documento complementar ao [README.md](README.md). Para arquitetura interna, veja [ANEXO II](ANEXOII-ARQUITETURA.md). Para referência operacional, veja [ANEXO III](ANEXOIII-AI-OS-Brutal-Edition.md). Para capacidades dos agents, veja [ANEXO IV](ANEXOIV-AGENT-CAPABILITIES.md).
 ## Claude Code Agent Ecosystem — Guia Operacional
 
-**36 agents · 30 commands · 28 skills · 12 playbooks · 6 plugins**
+**37 agents · 31 commands · 28 skills · 13 playbooks · 7 plugins**
 
 Este manual cobre **todos os cenários** que você vai encontrar no dia a dia como engenheiro backend Java/Spring Boot, com os comandos exatos para cada situação.
 
@@ -30,7 +30,7 @@ Fala! 👋
 Contexto do projeto:
   ☕ Java 21/Maven · Spring Boot 3.2 · 🐳 Docker + Compose · ⎈ Helm
   🗄️ PostgreSQL + Flyway · 📨 Kafka · 📋 CLAUDE.md presente
-  🤖 36 agents · 30 commands · 6 plugins
+  🤖 37 agents · 31 commands · 7 plugins
 
 Pronto pra trabalhar. O que precisa hoje?
 ```
@@ -1389,6 +1389,6 @@ ls .claude/plans/
 
 ---
 
-**Ecossistema completo. 37 agents. 31 commands. 28 skills. 12 playbooks. 6 plugins.**
+**Ecossistema completo. 37 agents. 31 commands. 28 skills. 13 playbooks. 7 plugins.**
 
 **Sempre comece com:** `claude --agent marcus`

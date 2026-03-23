@@ -1,4 +1,4 @@
-# Skills – Claude Code v10
+# Skills – Claude Code
 
 This directory contains **passive skills** used by Claude Code to specialize behavior depending on context.
 Each skill includes a `CLAUDE.md` that augments the global rules with domain-specific guidance.

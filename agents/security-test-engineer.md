@@ -16,7 +16,7 @@ description: |
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: red
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Security Test Engineer — Testes de Segurança

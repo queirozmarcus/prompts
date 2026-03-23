@@ -432,4 +432,4 @@ When this skill is active:
 ---
 **Skill type:** Passive
 **Applies with:** kubernetes, aws, networking, incidents
-**Pairs well with:** observability-engineer (DevOps pack), sre-engineer (DevOps pack), kubernetes-engineer (DevOps pack)
+**Pairs well with:** sre-engineer (DevOps pack), kubernetes-engineer (DevOps pack)

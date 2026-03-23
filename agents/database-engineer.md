@@ -13,7 +13,7 @@ model: sonnet
 color: yellow
 context: fork
 memory: project
-version: 10.0.0
+version: 10.2.0
 ---
 
 # Agent: Database Agent

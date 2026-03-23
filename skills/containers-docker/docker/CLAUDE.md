@@ -205,5 +205,5 @@ Responses should:
 
 **Skill type:** Passive  
 **Applies with:** Global `CLAUDE.md`  
-**Pairs well with:** devops-engineer (Dev pack), `aws`, `kubernetes`, `ci-cd`, `security`  
+**Pairs well with:** `aws`, `kubernetes`, `ci-cd`, `security`  
 **Override:** Project-level `CLAUDE.md` may refine behavior

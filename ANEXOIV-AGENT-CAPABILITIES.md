@@ -1,5 +1,5 @@
 # Agent Capabilities — Referência Detalhada
-**Versão:** v10.0.0
+**Versão:** v10.2.0
 
 > **ANEXO IV** — Documento complementar ao [README.md](README.md). Para casos de uso práticos, veja [ANEXO I](ANEXOI-MANUAL-CASOS-DE-USO.md). Para arquitetura interna, veja [ANEXO II](ANEXOII-ARQUITETURA.md). Para referência operacional, veja [ANEXO III](ANEXOIII-AI-OS-Brutal-Edition.md).
 
