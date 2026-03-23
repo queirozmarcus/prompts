@@ -1,6 +1,7 @@
 ---
 name: migration-discovery
 description: "Fase 0 — Discovery completo do monólito. Orquestra Domain Analyst, Data Engineer, Security Engineer e Tech Lead para análise completa."
+argument-hint: "[módulo-ou-pacote-base (opcional)]"
 ---
 
 # Fase 0 — Discovery e Assessment do Monólito

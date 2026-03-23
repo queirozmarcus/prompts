@@ -26,9 +26,9 @@ Instruções globais do Claude Code para todos os repositórios. Overrides de pr
 ├── skills/            # 28 passive skills — ativados por contexto de domínio
 ├── checks/            # Micro-checklists reutilizáveis (Kubernetes, Terraform, etc.)
 ├── playbooks/         # Sequências de tarefas reutilizáveis
-├── agents/            # 37 subagentes (Marcus + 35 de pack)
+├── agents/            # 37 subagentes (Marcus + 35 de pack + 1 utility)
 │   └── marcus.md      # Orquestrador global — ponto de entrada principal
-├── commands/          # 30 slash commands instalados dos packs
+├── commands/          # 31 slash commands instalados dos packs
 ├── plugins/           # Plugins instalados (superpowers, qodo, playwright, etc.)
 └── zIMA/              # Configs desativadas/arquivadas (prefixadas com z_)
 ```
@@ -43,13 +43,13 @@ O ambiente de desenvolvimento é operado por **Agent-Marcus** como orquestrador 
 ┌─────────────────────────────────────────────────────────────┐
 │                     Agent-Marcus (global)                     │
 │    Orquestrador · Claude Code Expert · Plugins & Connectors  │
-│    Carismático · Conhece todos os 48 slash commands · PT-BR  │
+│    Carismático · Conhece 36 commands do ecossistema · PT-BR  │
 ├─────────────────────────────────────────────────────────────┤
 │ Dev Team    │ QA Team     │ DevOps Team │ Data   │ Migration │
 │ 6 agents   │ 8 agents    │ 11 agents   │ 3 ag.  │ 7 agents  │
-│ 6 commands │ 8 commands  │ 11 commands │ 2 cmd  │ 4 commands│
+│ 6 commands │ 8 commands  │ 10 commands │ 2 cmd  │ 4 commands│
 └─────────────────────────────────────────────────────────────┘
-  37 agents · 31 pack commands · 21 native commands · 7 plugins
+  37 agents · 31 pack commands · 5 plugin commands · 7 plugins
 ```
 
 ### Packs e Seus Domínios
@@ -86,7 +86,7 @@ O ambiente de desenvolvimento é operado por **Agent-Marcus** como orquestrador 
 Marcus é o **único agent com personalidade** — carismático, bom humor, fala PT-BR com naturalidade. Ele é a exceção ao tom profissional/seco definido neste CLAUDE.md. Todos os agents de pack seguem o tom profissional padrão.
 
 Marcus sabe:
-- Todos os 48 slash commands (21 nativos + 27 pack) com exemplos de uso
+- Todos os 36 slash commands do ecossistema (31 pack + 5 plugin) com exemplos de uso, além dos nativos do CLI
 - Plugin commands e agents: `/brainstorm`, `/write-plan`, `/execute-plan`, `/new-sdk-app`, `/code-review`, `superpowers:code-reviewer`, `agent-sdk-verifier-py`, `agent-sdk-verifier-ts`
 - Plugin skills (ativadas por contexto): `frontend-design`, `playwright`, `qodo-skills`
 - Connectors MCP disponíveis (Slack, Google Drive, Jira, Figma, GitHub, etc.)
@@ -97,7 +97,7 @@ Marcus sabe:
 
 | Plugin | Commands | Agents | Skills (passivas) |
 |--------|----------|--------|-------------------|
-| **superpowers** | `/brainstorm`, `/write-plan`, `/execute-plan` | `code-reviewer` | brainstorming, TDD, debugging, code-review, writing-plans, execute-plans, git-worktrees, subagent-driven-development, verification-before-completion |
+| **superpowers** | `/brainstorm`, `/write-plan`, `/execute-plan` | `code-reviewer` | brainstorming, test-driven-development, systematic-debugging, requesting-code-review, writing-plans, executing-plans, using-git-worktrees, subagent-driven-development, verification-before-completion |
 | **agent-sdk-dev** | `/new-sdk-app` | `agent-sdk-verifier-py`, `agent-sdk-verifier-ts` | — |
 | **code-review** | `/code-review` | — | — |
 | **frontend-design** | — | — | `frontend-design` |
@@ -462,7 +462,7 @@ Playbooks são referência — executados manualmente ou citados pelo Marcus qua
 - **31 slash commands** incluindo /devops-cloud, /devops-mesh, /qa-security, /gen-prompt
 - **28 skills** com referências de agents corrigidas e testing skill adicionada
 - **13 agents com memória persistente** (8 user + 5 project)
-- **12 playbooks** com referências de agents corrigidas
+- **13 playbooks** com referências de agents corrigidas
 - **Model Strategy** — cada agent tem modelo default + Marcus recomenda override
 - **ANEXO II (ARQUITETURA)** — deep-dive: context isolation, tokens, memory, tools, otimização
 - **Prompt-engineer** + /gen-prompt — geração de artefatos e recomendação de modelo
