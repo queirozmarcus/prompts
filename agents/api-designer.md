@@ -15,6 +15,8 @@ description: |
   - "Como versionar a API quando preciso de breaking change?"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: purple
 version: 10.2.0
 ---

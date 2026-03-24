@@ -16,6 +16,8 @@ description: |
   - "Revise este mapeamento JPA e aponte problemas"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: yellow
 context: fork
 memory: project

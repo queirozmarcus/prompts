@@ -17,6 +17,8 @@ description: |
   - "Crie runbook operacional para o order-service"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: pink
 memory: user
 version: 10.2.0

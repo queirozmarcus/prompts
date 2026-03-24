@@ -15,6 +15,8 @@ description: |
   - "Otimize o pipeline — está demorando 20 minutos"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: green
 context: fork
 version: 10.2.0

@@ -14,6 +14,8 @@ description: |
   - "Valide que as migrations Flyway rodam corretamente"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: yellow
 context: fork
 version: 10.2.0

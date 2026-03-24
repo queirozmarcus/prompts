@@ -14,6 +14,8 @@ description: |
   - "Valide integridade dos dados após migração do contexto Inventory"
 tools: Read, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: yellow
 context: fork
 version: 10.2.0

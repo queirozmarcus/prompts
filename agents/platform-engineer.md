@@ -15,6 +15,8 @@ description: |
   - "Configure canary deployment para o payment-service"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: cyan
 version: 10.2.0
 ---

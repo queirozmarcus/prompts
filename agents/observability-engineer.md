@@ -16,6 +16,8 @@ description: |
   - "Configure Loki para agregar logs estruturados"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: yellow
 memory: user
 version: 10.2.0

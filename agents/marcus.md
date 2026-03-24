@@ -17,6 +17,8 @@ description: |
     <uses Task tool to launch marcus agent>
 tools: Read, Write, Edit, Grep, Glob, Bash, Task, mcp__episodic-memory
 model: sonnet
+fast: true
+effort: low
 color: blue
 memory: user
 version: 10.2.0

@@ -15,6 +15,8 @@ description: |
   - "Crie ADR para a decisão de usar Redis como cache"
 tools: Read, Grep, Glob, Bash
 model: opus
+fast: true
+effort: low
 color: blue
 memory: user
 version: 10.2.0

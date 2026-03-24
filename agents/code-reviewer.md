@@ -14,6 +14,8 @@ description: |
   - "Revise este use case por segurança e performance"
 tools: Read, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: orange
 memory: user
 version: 10.2.0

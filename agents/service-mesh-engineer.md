@@ -15,6 +15,8 @@ description: |
   - "Crie authorization policy para restringir acesso ao payment-service"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: orange
 version: 10.2.0
 ---

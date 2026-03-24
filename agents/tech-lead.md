@@ -14,6 +14,8 @@ description: |
   - "Avalie os riscos de extrair o módulo de pagamentos"
 tools: Read, Grep, Glob, Bash
 model: opus
+fast: true
+effort: low
 color: blue
 version: 10.2.0
 ---

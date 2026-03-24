@@ -16,6 +16,8 @@ description: |
     <uses Task tool to launch prompt-engineer agent>
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: magenta
 memory: user
 version: 10.2.0

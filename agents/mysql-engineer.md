@@ -11,6 +11,8 @@ description: |
   For PostgreSQL, use database-engineer instead.
 tools: Read, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: yellow
 context: fork
 memory: project

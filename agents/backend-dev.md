@@ -15,6 +15,8 @@ description: |
   - "Adicione circuit breaker no client do payment-service"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: green
 context: fork
 memory: user

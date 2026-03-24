@@ -13,6 +13,8 @@ description: |
   - "Teste o fluxo completo de cadastro de cliente via API"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: cyan
 context: fork
 version: 10.2.0

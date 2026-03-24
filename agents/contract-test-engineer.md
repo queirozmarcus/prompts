@@ -13,6 +13,8 @@ description: |
   - "Valide que o payment-service consumer está compatível com order-service"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: purple
 version: 10.2.0
 ---

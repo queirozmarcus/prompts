@@ -15,6 +15,8 @@ description: |
   - "Configure scan de dependências no CI"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: red
 version: 10.2.0
 ---

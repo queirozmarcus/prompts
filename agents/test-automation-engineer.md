@@ -15,6 +15,8 @@ description: |
   - "Otimize a suíte de testes — está demorando 12 minutos"
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: pink
 version: 10.2.0
 ---

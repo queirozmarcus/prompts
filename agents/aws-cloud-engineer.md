@@ -10,6 +10,8 @@ description: |
   Prefer this over pack agents when working outside Java/Spring Boot context.
 tools: Read, Grep, Glob, Bash
 model: sonnet
+fast: true
+effort: low
 color: orange
 version: 10.2.0
 ---
