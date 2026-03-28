@@ -8,12 +8,12 @@ Um ecossistema completo para desenvolvimento backend Java/Spring Boot, QA, DevOp
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Agent-Marcus (global)                     │
-│       Orquestrador · Claude Code Expert · PT-BR · 🚀         │
+│                     Agent-Marcus (global)                   │
+│       Orquestrador · Claude Code Expert · PT-BR · 🚀        │
 ├──────────┬──────────┬───────────┬────────┬──────────────────┤
 │ Dev (6)  │ QA (8)   │ DevOps(11)│Data (3)│ Migration (7)    │
-│ 6 cmds   │ 8 cmds   │ 10 cmds   │ 2 cmds │ 4 cmds          │
-│          Utility: prompt-engineer (1 agent, 1 cmd)           │
+│ 6 cmds   │ 8 cmds   │ 10 cmds   │ 2 cmds │ 4 cmds           │
+│          Utility: prompt-engineer (1 agent, 1 cmd)          │
 └──────────┴──────────┴───────────┴────────┴──────────────────┘
 ```
 <img src="img/AgentEcosystem.png" alt="Agent Ecosystem" width="800">
@@ -65,16 +65,12 @@ Para tarefas diretas (query simples, gerar testes), o fluxo é simplificado: tri
 ### Instalar o ecossistema
 
 ```bash
-# 1. Descompactar
-unzip dot-claude-ready.zip
-cd claude-home
-
-# 2. Executar o instalador (faz backup automático do ~/.claude existente)
-chmod +x install.sh
-./install.sh
+# 1. Realize o backup
+cp -ra $HOME/.claude $HOME/.claude-bckup
+baixe o repositório e copie para .claude
 
 # 3. Pronto!
-claude --agent marcus
+claude --agent marcus 
 ```
 
 ### Verificar instalacao
@@ -90,6 +86,17 @@ claude --agent marcus
 claude agents
 ```
 
+### Sistema de Switch between Claude models (/model) para os agentes
+```
+fast: true (atual) / false              -   Liga/desliga Fast Mode (streaming mais rápido)
+effort: low (atual) / medium / high     -   Controla o budget de thinking interno do modelo
+
+- effort só tem efeito em modelos com extended thinking (Opus 4+). Haiku é ignorado.
+- fast: false + effort: medium = mais tokens de thinking, respostas mais deliberadas, mas mais lentas e caras.    
+```
+
+
+
 Para detalhes sobre cada modulo de validacao, veja o **[ANEXO V — Manual de Validacao](ANEXOV-MANUAL-VALIDACAO-ECO.md)**.
 
 ---
@@ -100,6 +107,8 @@ Você sempre começa com Marcus. Ele é seu ponto de entrada para tudo.
 
 ```bash
 claude --agent marcus
+ou
+claude --agent marcus --dangerously-skip-permissions
 ```
 
 Marcus faz uma varredura do projeto (tipo de projeto, infra, plugins instalados) e fica pronto para rotear qualquer pedido para o especialista certo. Você nunca precisa saber qual agent chamar — **descreva o que precisa e Marcus delega**.

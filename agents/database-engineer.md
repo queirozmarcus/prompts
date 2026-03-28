@@ -11,7 +11,7 @@ description: |
 tools: Read, Grep, Glob, Bash
 model: sonnet
 fast: true
-effort: low
+effort: medium
 color: yellow
 context: fork
 memory: project

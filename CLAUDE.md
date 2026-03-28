@@ -13,6 +13,7 @@
 | **marcus-workflow-v10.svg** | Diagrama visual do workflow de 5 fases do Marcus |
 | **ANEXO IV** — Agent Capabilities | Capacidades detalhadas dos 37 agents. Marcus consulta para routing informado |
 | **ANEXO V** — Manual de Validacao | Guia completo do `validate-ecosystem.sh`: 8 modulos, exemplos, troubleshooting |
+| **ANEXO VI** — Modelos por Perfil de Agent | Estratégia de atribuição de modelos (haiku, sonnet, opus) aos 37 agents + quando fazer override |
 
 
 Instruções globais do Claude Code para todos os repositórios. Overrides de projeto em `./CLAUDE.md`.
@@ -71,7 +72,7 @@ O ambiente de desenvolvimento é operado por **Agent-Marcus** como orquestrador 
 |----------|-----------|------------|-----------|
 | **Agents** (37) | `~/.claude/agents/` | `claude --agent {name}` ou delegação via Marcus/commands | Especialista com identidade, tools e context window próprio |
 | **Skills** (28) | `~/.claude/skills/` | Automaticamente por contexto de domínio | Boas práticas passivas que enriquecem qualquer sessão |
-| **Plugins** (7) | `~/.claude/plugins/` | `/plugin install` + ativação por contexto ou commands | Extensões oficiais/community com skills, agents, hooks |
+| **Plugins** (7) | `~/.claude/plugins/` | `/plugin install` + ativação por contexto ou commands | Extensões oficiais com skills, agents, hooks (superpowers + 6 complementos) |
 | **Commands** (31) | `~/.claude/commands/` | `/command-name` | Orquestração de múltiplos agents em sequência |
 | **Checks** | `~/.claude/checks/` | Referenciados por workflows, playbooks ou durante revisao | Micro-checklists de verificacao e quality gates |
 | **Workflows** (4+) | `~/.claude/workflows/` | Marcus seleciona na Fase 2, executa na Fase 4 | Execution engine YAML com paralelismo, quality gates, retry, rollback |
@@ -99,17 +100,17 @@ Marcus sabe:
 
 ### Plugins Instalados
 
-| Plugin | Commands | Agents | Skills (passivas) |
-|--------|----------|--------|-------------------|
-| **superpowers** | `/brainstorm`, `/write-plan`, `/execute-plan` | `code-reviewer` | brainstorming, test-driven-development, systematic-debugging, requesting-code-review, writing-plans, executing-plans, using-git-worktrees, subagent-driven-development, verification-before-completion |
-| **agent-sdk-dev** | `/new-sdk-app` | `agent-sdk-verifier-py`, `agent-sdk-verifier-ts` | — |
-| **code-review** | `/code-review` | — | — |
-| **frontend-design** | — | — | `frontend-design` |
-| **playwright** | — | — | playwright (browser automation) |
-| **qodo-skills** | — | — | `qodo-get-rules`, `qodo-get-relevant-rules`, `qodo-pr-resolver` |
-| **episodic-memory** | — | — | episodic-memory (MCP: busca semântica em conversas anteriores via SQLite + vector search) |
+| Plugin | Marketplace | Commands | Agents | Skills (passivas) |
+|--------|-----------|----------|--------|-------------------|
+| **superpowers** | claude-plugins-official | `/brainstorm`, `/write-plan`, `/execute-plan` | `code-reviewer` | brainstorming, test-driven-development, systematic-debugging, requesting-code-review, receiving-code-review, writing-plans, writing-skills, executing-plans, using-superpowers, using-git-worktrees, dispatching-parallel-agents, subagent-driven-development, finishing-a-development-branch, verification-before-completion |
+| **agent-sdk-dev** | claude-plugins-official | `/new-sdk-app` | `agent-sdk-verifier-py`, `agent-sdk-verifier-ts` | — |
+| **code-review** | claude-plugins-official | `/code-review` | — | — |
+| **frontend-design** | claude-plugins-official | — | — | `frontend-design` |
+| **playwright** | claude-plugins-official | — | — | playwright (browser automation) |
+| **qodo-skills** | claude-plugins-official | — | — | `qodo-get-rules`, `qodo-get-relevant-rules`, `qodo-pr-resolver` |
+| **episodic-memory** | superpowers-marketplace | — | — | episodic-memory (MCP: busca semântica em conversas anteriores via SQLite + vector search) |
 
-**Nota:** `frontend-design`, `playwright` e `qodo-skills` não têm slash commands — atuam via skills passivas ou invocação direta como agents.
+**Nota:** `frontend-design`, `playwright` e `qodo-skills` não têm slash commands — atuam via skills passivas. `episodic-memory` é complemento do `superpowers` para memória entre sessões.
 
 ### Connectors (MCP)
 

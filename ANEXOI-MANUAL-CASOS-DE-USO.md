@@ -1,4 +1,4 @@
-# Manual Completo de Casos de Uso v10
+# Manual Completo de Casos de Uso v10.2.0
 
 > **ANEXO I** — Documento complementar ao [README.md](README.md). Para arquitetura interna, veja [ANEXO II](ANEXOII-ARQUITETURA.md). Para referência operacional, veja [ANEXO III](ANEXOIII-AI-OS-Brutal-Edition.md). Para capacidades dos agents, veja [ANEXO IV](ANEXOIV-AGENT-CAPABILITIES.md).
 ## Claude Code Agent Ecosystem — Guia Operacional

@@ -16,7 +16,7 @@ description: |
 tools: Read, Grep, Glob, Bash
 model: opus
 fast: true
-effort: low
+effort: medium
 color: blue
 memory: user
 version: 10.2.0

@@ -47,7 +47,7 @@ tools: Read, Write, Grep, Glob, Bash
 model: inherit
 color: green
 context: fork          # optional — isolates context window
-version: 5.0.0
+version: 10.2.0
 ---
 ```
 
@@ -128,7 +128,7 @@ See [ANEXO V — Manual de Validacao](../ANEXOV-MANUAL-VALIDACAO-ECO.md) for det
 
 ## Changelog
 
-### v5.0.0
+### v10.2.0
 - **Zero standalone agents** — all specialists belong to a team pack
 - **Marcus as global orchestrator** — always active via `claude --agent marcus`
 - **New Data Team pack** (3 agents, 2 commands) — DBA moved from Dev, PostgreSQL + MySQL specialists absorbed

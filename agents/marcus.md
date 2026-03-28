@@ -18,7 +18,7 @@ description: |
 tools: Read, Write, Edit, Grep, Glob, Bash, Task, mcp__episodic-memory
 model: sonnet
 fast: true
-effort: low
+effort: medium
 color: blue
 memory: user
 version: 10.2.0

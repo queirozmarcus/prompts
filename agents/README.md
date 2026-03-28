@@ -1,4 +1,4 @@
-# Claude Code Agents v10
+# Claude Code Agents v10.2.0
 
 **37 agentes especializados** organizados em **5 times** + **1 orquestrador global**.
 **31 slash commands** para orquestração automática.

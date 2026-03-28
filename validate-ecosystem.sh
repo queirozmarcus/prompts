@@ -630,10 +630,13 @@ validate_inventory() {
     actual_checks="$(find "$CHECKS_DIR" -name "*.md" 2>/dev/null | wc -l)"
     actual_workflows="$(find "$WORKFLOWS_DIR" -name "*.workflow.yaml" 2>/dev/null | wc -l)"
 
-    # Plugins
+    # Plugins (conta a partir do installed_plugins.json)
     local actual_plugins=0
-    if [[ -d "${PLUGINS_DIR}/cache" ]]; then
-        actual_plugins="$(find "${PLUGINS_DIR}/cache" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)"
+    local plugins_json="${PLUGINS_DIR}/installed_plugins.json"
+    if [[ -f "$plugins_json" ]]; then
+        actual_plugins="$(grep -c '"scope":' "$plugins_json" 2>/dev/null || echo 0)"
+    elif [[ -d "${PLUGINS_DIR}/cache" ]]; then
+        actual_plugins="$(find "${PLUGINS_DIR}/cache" -maxdepth 2 -mindepth 2 -type d ! -path "*/temp_*" 2>/dev/null | wc -l)"
     fi
 
     # Commands sem source no repo (busca pack + flat)

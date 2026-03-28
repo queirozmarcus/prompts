@@ -15,7 +15,7 @@ description: |
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 fast: true
-effort: low
+effort: medium
 color: green
 context: fork
 version: 10.2.0
